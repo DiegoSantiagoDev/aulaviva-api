@@ -12,3 +12,4 @@ e transformado em resumo para estudo.
 
 ## Status
 Em desenvolvimento.
+    
