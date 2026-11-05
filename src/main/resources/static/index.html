@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AulaViva</title>
+<style>
+  :root {
+    --board: #1e3a34; --chalk: #eef3f0; --paper: #f5f7f6; --surface: #ffffff;
+    --ink: #15201d; --muted: #56655f; --line: #d5ddd9; --accent: #e0b84c;
+    --ok: #2f7d4f; --wait: #9a6a12; --bad: #b83232; --idle: #56655f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --board: #14262a; --chalk: #e8efec; --paper: #0f1a1c; --surface: #172629;
+      --ink: #e8efec; --muted: #9fb1ab; --line: #2a3d40; --accent: #e0b84c;
+      --ok: #5fc08a; --wait: #e0b84c; --bad: #ef7a7a; --idle: #9fb1ab;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background: var(--board); color: var(--chalk); padding: 28px 24px; }
+  header h1 { margin: 0; font: 700 2rem/1.1 Georgia, "Times New Roman", serif; }
+  header p { margin: 6px 0 0; opacity: .85; }
+  .layout { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 24px;
+            max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  h2, h3 { font-family: Georgia, "Times New Roman", serif; margin: 0 0 10px; }
+  h2 { font-size: 1.5rem; } h3 { font-size: 1.1rem; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+           padding: 16px; margin-bottom: 16px; }
+  label { display: block; font-size: .9rem; color: var(--muted); margin: 10px 0 4px; }
+  input[type=text], input[type=file] { width: 100%; padding: 8px 10px; font: inherit; color: inherit;
+           background: var(--paper); border: 1px solid var(--line); border-radius: 6px; }
+  button { font: inherit; cursor: pointer; border-radius: 6px; border: 1px solid var(--board);
+           background: var(--board); color: var(--chalk); padding: 8px 14px; margin-top: 10px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.secondary { background: transparent; color: var(--ink); border-color: var(--line); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .lesson-item { display: block; width: 100%; text-align: left; margin: 0 0 8px; color: var(--ink);
+                 background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--line); }
+  .lesson-item.active { border-left-color: var(--accent); }
+  .lesson-item small { display: block; color: var(--muted); }
+  .badge { font-size: .8rem; font-weight: 600; }
+  .CREATED { color: var(--idle); } .PROCESSING { color: var(--wait); }
+  .DONE { color: var(--ok); } .FAILED { color: var(--bad); }
+  .summary { white-space: pre-wrap; }
+  .error { color: var(--bad); } .empty { color: var(--muted); }
+  #msg { min-height: 1.5em; margin: 0 0 12px; }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .thumbs img { height: 90px; border-radius: 6px; border: 1px solid var(--line); }
+  details { margin-top: 12px; } summary { cursor: pointer; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>AulaViva</h1>
+  <p>Recupere o conteúdo das aulas que você perdeu.</p>
+</header>
+
+<div class="layout">
+  <aside>
+    <form id="create-form" class="panel">
+      <h3>Nova aula</h3>
+      <label for="title">Título</label>
+      <input id="title" type="text" maxlength="150" required>
+      <label for="subject">Disciplina</label>
+      <input id="subject" type="text" maxlength="80" required>
+      <button type="submit">Criar aula</button>
+    </form>
+    <div id="list" aria-label="Aulas"></div>
+  </aside>
+
+  <section>
+    <p id="msg" role="status" aria-live="polite"></p>
+    <div id="detail"><p class="empty">Escolha uma aula na lista ou crie uma nova.</p></div>
+  </section>
+</div>
+
+<script>
+const API = '/api/lessons';
+const STATUS = { CREATED: 'Aguardando áudio', PROCESSING: 'Processando', DONE: 'Pronta', FAILED: 'Falhou' };
+let selectedId = null;
+let timer = null;
+let fileCounter = 0;
+
+const $ = (selector) => document.querySelector(selector);
+
+function el(tag, props = {}, ...children) {
+  const node = document.createElement(tag);
+  Object.entries(props).forEach(([key, value]) => {
+    if (key === 'class') node.className = value;
+    else if (key.startsWith('on')) node.addEventListener(key.slice(2), value);
+    else node[key] = value;
+  });
+  children.flat().forEach((child) => {
+    if (child !== null && child !== undefined) node.append(child);
+  });
+  return node;
+}
+
+function say(text, isError = false) {
+  const msg = $('#msg');
+  msg.textContent = text;
+  msg.className = isError ? 'error' : '';
+}
+
+async function request(url, options) {
+  const response = await fetch(url, options);
+  let data = null;
+  try { data = await response.json(); } catch (_) { /* resposta sem corpo */ }
+  if (!response.ok) throw new Error((data && data.message) || 'Erro ' + response.status);
+  return data;
+}
+
+function upload(url, file) {
+  const form = new FormData();
+  form.append('file', file);
+  return request(url, { method: 'POST', body: form });
+}
+
+function badge(status) {
+  return el('span', { class: 'badge ' + status, textContent: STATUS[status] || status });
+}
+
+async function loadList() {
+  try {
+    const lessons = await request(API);
+    const list = $('#list');
+    list.replaceChildren();
+    if (lessons.length === 0) {
+      list.append(el('p', { class: 'empty', textContent: 'Nenhuma aula ainda. Crie a primeira acima.' }));
+      return;
+    }
+    lessons.forEach((lesson) => {
+      const item = el('button', {
+        class: 'lesson-item' + (lesson.id === selectedId ? ' active' : ''),
+        type: 'button',
+        onclick: () => openLesson(lesson.id),
+      }, lesson.title, el('small', {}, lesson.subject + ' · ', badge(lesson.status)));
+      list.append(item);
+    });
+  } catch (error) {
+    say(error.message, true);
+  }
+}
+
+async function openLesson(id) {
+  selectedId = id;
+  clearTimeout(timer);
+  try {
+    const lesson = await request(API + '/' + id);
+    renderDetail(lesson);
+    loadList();
+    if (lesson.status === 'PROCESSING') timer = setTimeout(() => openLesson(id), 3000);
+  } catch (error) {
+    say(error.message, true);
+  }
+}
+
+function fileForm(labelText, accept, buttonText, onSend, disabled) {
+  const input = el('input', { type: 'file', accept, id: 'file-' + (++fileCounter) });
+  const button = el('button', { type: 'button', textContent: buttonText, disabled,
+    onclick: async () => {
+      if (!input.files.length) { say('Escolha um arquivo primeiro.', true); return; }
+      try { await onSend(input.files[0]); } catch (error) { say(error.message, true); }
+    } });
+  return el('div', {}, el('label', { htmlFor: input.id, textContent: labelText }), input, button);
+}
+
+function renderDetail(lesson) {
+  const processing = lesson.status === 'PROCESSING';
+  const box = $('#detail');
+  box.replaceChildren(
+    el('div', { class: 'panel' },
+      el('h2', { textContent: lesson.title }),
+      el('p', {}, lesson.subject + ' · ', badge(lesson.status)),
+      processing ? el('p', { class: 'empty', textContent: 'Analisando o áudio e as imagens para preparar o resumo. Isso pode levar alguns minutos.' }) : null,
+      lesson.failureReason ? el('p', { class: 'error', textContent: lesson.failureReason }) : null,
+      (lesson.status === 'FAILED' || lesson.status === 'DONE') && lesson.hasAudio
+        ? el('button', { type: 'button', textContent: lesson.status === 'DONE' ? 'Atualizar resumo' : 'Reprocessar', onclick: async () => {
+            try { await request(API + '/' + lesson.id + '/reprocess', { method: 'POST' }); openLesson(lesson.id); }
+            catch (error) { say(error.message, true); } } })
+        : null),
+
+    el('div', { class: 'panel' },
+      el('h3', { textContent: '1. Áudio da aula' }),
+      fileForm('Arquivo de áudio (até 25 MB). O envio inicia o processamento.', 'audio/*', 'Enviar áudio', async (file) => {
+        await upload(API + '/' + lesson.id + '/audio', file);
+        say('Áudio enviado. O processamento começou.');
+        openLesson(lesson.id);
+      }, processing)),
+
+    el('div', { class: 'panel' },
+      el('h3', { textContent: '2. Fotos do quadro (envie antes do áudio)' }),
+      fileForm('Foto do quadro ou dos slides (até 3 serão usadas no resumo)', 'image/*', 'Enviar foto', async (file) => {
+        await upload(API + '/' + lesson.id + '/images', file);
+        say(lesson.status === 'DONE' || lesson.status === 'FAILED'
+          ? 'Foto enviada. Use “Atualizar resumo” ou “Reprocessar” para incluí-la.'
+          : 'Foto enviada. Envie todas as fotos antes do áudio para incluí-las no primeiro resumo.');
+        openLesson(lesson.id);
+      }, processing),
+      el('div', { class: 'thumbs' },
+        lesson.images.map((image) => el('img', { src: image.url, alt: image.originalName || 'Foto do quadro' })))),
+
+    lesson.summary
+      ? el('div', { class: 'panel' },
+          el('h3', { textContent: 'Resumo da aula' }),
+          el('div', { class: 'summary', textContent: lesson.summary }))
+      : null);
+}
+
+$('#create-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  try {
+    const lesson = await request(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: $('#title').value, subject: $('#subject').value }),
+    });
+    event.target.reset();
+    say('Aula criada.');
+    openLesson(lesson.id);
+  } catch (error) {
+    say(error.message, true);
+  }
+});
+
+loadList();
+</script>
+</body>
+</html>
