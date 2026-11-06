@@ -54,7 +54,6 @@ public class Lesson {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    /** Exigido pelo JPA. */
     protected Lesson() {
     }
 
@@ -75,16 +74,12 @@ public class Lesson {
         this.updatedAt = Instant.now();
     }
 
-    // ---- regras de transição de estado ----
-
-    /** Registra um novo áudio e coloca a aula na fila de processamento. */
     public void attachAudio(String storedName, String originalName) {
         this.audioFileName = storedName;
         this.audioOriginalName = originalName;
         restartProcessing();
     }
 
-    /** Limpa resultados anteriores e volta o estado para PROCESSING. */
     public void restartProcessing() {
         this.transcript = null;
         this.summary = null;

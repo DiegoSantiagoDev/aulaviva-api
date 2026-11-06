@@ -26,13 +26,6 @@ import com.aulaviva.api.model.MediaKind;
 import com.aulaviva.api.repository.LessonImageRepository;
 import com.aulaviva.api.repository.LessonRepository;
 
-/**
- * Regras de negócio das aulas.
- *
- * <p>Os métodos que disparam o processamento NÃO são @Transactional de propósito: cada
- * {@code save} do repositório já confirma a transação antes de o processamento assíncrono
- * começar, então a thread de fundo sempre enxerga os dados gravados.
- */
 @Service
 public class LessonService {
 

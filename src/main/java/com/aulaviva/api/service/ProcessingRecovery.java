@@ -12,10 +12,6 @@ import com.aulaviva.api.model.Lesson;
 import com.aulaviva.api.model.LessonStatus;
 import com.aulaviva.api.repository.LessonRepository;
 
-/**
- * Se o servidor reiniciar no meio de um processamento, a aula ficaria em PROCESSING para sempre.
- * Ao subir, marcamos essas aulas como FAILED para o usuário poder reprocessá-las.
- */
 @Component
 public class ProcessingRecovery {
 

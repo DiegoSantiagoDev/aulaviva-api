@@ -4,9 +4,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import com.aulaviva.api.exception.AiIntegrationException;
 
-/**
- * Configuração da integração com a API de IA (propriedades "aulaviva.ai.*").
- */
 @ConfigurationProperties(prefix = "aulaviva.ai")
 public record AiProperties(
         String apiKey,
@@ -16,9 +13,6 @@ public record AiProperties(
         String language,
         int maxImages) {
 
-    /**
-     * Garante que a chave existe antes de qualquer chamada externa.
-     */
     public void requireApiKey() {
         if (apiKey == null || apiKey.isBlank()) {
             throw new AiIntegrationException(

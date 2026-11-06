@@ -8,9 +8,6 @@ import com.aulaviva.api.dto.LessonResponse;
 import com.aulaviva.api.model.Lesson;
 import com.aulaviva.api.model.LessonImage;
 
-/**
- * Converte entidades em DTOs. Mantém o formato da API separado do modelo do banco.
- */
 public final class LessonMapper {
 
     private LessonMapper() {

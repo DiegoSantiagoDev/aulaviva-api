@@ -17,10 +17,6 @@ import com.aulaviva.api.model.MediaKind;
 import com.aulaviva.api.repository.LessonImageRepository;
 import com.aulaviva.api.repository.LessonRepository;
 
-/**
- * Executa em segundo plano o pipeline: áudio -> transcrição -> resumo.
- * Qualquer falha é registrada na própria aula (status FAILED), nunca se perde.
- */
 @Service
 public class LessonProcessingService {
 
@@ -75,7 +71,6 @@ public class LessonProcessingService {
         }
     }
 
-    /** Só mensagens da nossa integração (seguras) chegam ao usuário. */
     private String userMessage(Exception e) {
         if (e instanceof AiIntegrationException) {
             return e.getMessage();

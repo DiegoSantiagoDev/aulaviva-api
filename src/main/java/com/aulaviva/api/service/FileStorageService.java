@@ -20,9 +20,6 @@ import com.aulaviva.api.exception.StorageException;
 import com.aulaviva.api.exception.UnsupportedFormatException;
 import com.aulaviva.api.model.MediaKind;
 
-/**
- * Valida e grava arquivos enviados (áudios e imagens) no disco.
- */
 @Service
 public class FileStorageService {
 
@@ -35,10 +32,6 @@ public class FileStorageService {
         directories.put(MediaKind.IMAGE, prepareDirectory(properties.imageDir()));
     }
 
-    /**
-     * Grava o arquivo com um nome gerado pelo servidor e devolve esse nome.
-     * O nome enviado pelo cliente nunca é usado no disco.
-     */
     public String store(MultipartFile file, MediaKind kind) {
         if (file == null || file.isEmpty()) {
             throw new InvalidFileException("O arquivo enviado está vazio.");
@@ -61,9 +54,6 @@ public class FileStorageService {
         return storedName;
     }
 
-    /**
-     * Resolve o caminho de um arquivo já salvo, impedindo que o nome escape da pasta.
-     */
     public Path resolve(MediaKind kind, String storedName) {
         Path directory = directories.get(kind);
         Path path = directory.resolve(storedName).normalize();
@@ -73,9 +63,6 @@ public class FileStorageService {
         return path;
     }
 
-    /**
-     * Remove um arquivo sem falhar caso ele não exista ou não possa ser apagado.
-     */
     public void deleteQuietly(MediaKind kind, String storedName) {
         if (storedName == null) {
             return;

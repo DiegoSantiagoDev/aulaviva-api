@@ -1,6 +1,5 @@
 package com.aulaviva.api.exception;
 
-/** Falha ao ler ou gravar arquivos no disco (HTTP 500). */
 public class StorageException extends RuntimeException {
 
     public StorageException(String message) {

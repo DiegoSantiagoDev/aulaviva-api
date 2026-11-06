@@ -16,9 +16,6 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 
 import com.aulaviva.api.dto.ErrorResponse;
 
-/**
- * Converte exceções em respostas de erro padronizadas, em um só lugar.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
