@@ -43,3 +43,4 @@ Thumbs.db
 # Dados locais (arquivos enviados e banco de desenvolvimento)
 uploads/
 data/
+config/
