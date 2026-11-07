@@ -43,3 +43,6 @@ Thumbs.db
 # Dados locais (arquivos enviados e banco de desenvolvimento)
 uploads/
 data/
+
+# Configuração local com segredos (chave da IA e senha do banco)
+config/
