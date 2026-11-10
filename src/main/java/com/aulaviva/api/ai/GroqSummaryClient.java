@@ -20,6 +20,9 @@ import org.springframework.web.client.RestClientResponseException;
 import com.aulaviva.api.config.AiProperties;
 import com.aulaviva.api.exception.AiIntegrationException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.aulaviva.api.dto.slide.LessonStudyMaterial;
 
 @Component
 public class GroqSummaryClient implements SummaryClient {
@@ -51,18 +54,47 @@ public class GroqSummaryClient implements SummaryClient {
             Priorize o que realmente foi explicado. Quando uma imagem estiver ilegível ou a
             transcrição estiver confusa/incompleta, informe a limitação. Não invente conteúdo,
             exemplos, fórmulas ou explicações que não tenham apoio no material recebido.
+            
+            IMPORTANTE: Sua resposta deve ser exclusivamente um JSON válido,
+            sem Markdown, sem blocos de código e sem textos antes ou depois.
+            
+            A estrutura deve ser exatamente:
+            
+            {
+              "summary": "Resumo completo da aula",
+              "presentation": {
+                "title": "Título da apresentação",
+                "slides": [
+                  {
+                    "title": "Título do slide",
+                    "layout": "content",
+                    "content": ["Informação 1", "Informação 2"]
+                  }
+                ]
+              }
+            }
+            
+            Gere entre 5 e 10 slides, dependendo da quantidade de conteúdo.
+            Não invente informações que não estejam presentes no material.
             """;
 
     private final RestClient client;
     private final AiProperties properties;
+    private final ObjectMapper objectMapper;
 
-    public GroqSummaryClient(RestClient aiRestClient, AiProperties properties) {
+    public GroqSummaryClient(RestClient aiRestClient, AiProperties properties, ObjectMapper objectMapper) {
         this.client = aiRestClient;
         this.properties = properties;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public String summarize(String title, String subject, String transcript, List<Path> boardImages) {
+    public LessonStudyMaterial summarize(
+            String title,
+            String subject,
+            String transcript,
+            List<Path> boardImages
+    ) {
         properties.requireApiKey();
 
         String text = buildUserText(title, subject, transcript);
@@ -87,6 +119,7 @@ public class GroqSummaryClient implements SummaryClient {
         Map<String, Object> request = Map.of(
                 "model", properties.summaryModel(),
                 "temperature", 0.3,
+                "response_format", Map.of("type", "json_object"),
                 "messages", List.of(systemMessage, userMessage));
 
         try {
@@ -127,14 +160,38 @@ public class GroqSummaryClient implements SummaryClient {
         }
     }
 
-    private String extractContent(ChatResponse response) {
-        if (response == null || response.choices() == null || response.choices().isEmpty()
+    private LessonStudyMaterial extractContent(ChatResponse response) {
+        if (response == null || response.choices() == null
+                || response.choices().isEmpty()
                 || response.choices().get(0).message() == null
                 || response.choices().get(0).message().content() == null
                 || response.choices().get(0).message().content().isBlank()) {
             throw new AiIntegrationException("A API de resumo devolveu uma resposta vazia.");
         }
-        return response.choices().get(0).message().content().trim();
+
+        try {
+            LessonStudyMaterial material = objectMapper.readValue(
+                    response.choices().get(0).message().content().trim(),
+                    LessonStudyMaterial.class
+            );
+
+            if (material == null || material.summary() == null || material.summary().isBlank()) {
+                throw new AiIntegrationException("A IA não retornou um resumo válido.");
+            }
+
+            if (material.presentation() == null
+                    || material.presentation().slides() == null
+                    || material.presentation().slides().isEmpty()) {
+                throw new AiIntegrationException("A IA não retornou uma apresentação válida.");
+            }
+
+            return material;
+
+        } catch (JsonProcessingException e) {
+            throw new AiIntegrationException(
+                    "Não foi possível converter a resposta da IA em material de estudo.", e
+            );
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
