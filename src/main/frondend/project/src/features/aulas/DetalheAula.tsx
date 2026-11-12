@@ -4,6 +4,7 @@ import { LessonResponse } from '../../api/tipos';
 import { useRoteador } from '../../app/Roteador';
 import AbaResumo from './AbaResumo';
 import AbaFotos from './AbaFotos';
+import VisualizadorSlides from '../slides/VisualizadorSlides';
 import ArtFigure from '../../components/ArtFigure';
 import {
   ArrowLeft,
@@ -291,13 +292,10 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
         )}
 
         {abaAtiva === 'slides' && (
-          <div className="art-frame rounded-3xl p-10 text-center border border-gold/30 space-y-4">
-            <Presentation className="w-12 h-12 text-gold mx-auto" />
-            <h3 className="font-display text-3xl font-bold text-ink">Sistema de Slides Editorial</h3>
-            <p className="text-sm text-ink-soft max-w-md mx-auto">
-              O visualizador dinâmico de slides com 8 layouts CSS, navegação por teclado e tela cheia será ativado na Fase 5.
-            </p>
-          </div>
+          <VisualizadorSlides
+            presentation={aula.presentation}
+            disciplina={aula.subject}
+          />
         )}
 
         {abaAtiva === 'fotos' && (
