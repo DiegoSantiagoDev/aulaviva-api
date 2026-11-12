@@ -15,9 +15,19 @@ import Footer from './components/Footer';
 
 import PaginaEntrar from './pages/PaginaEntrar';
 import Pagina404 from './pages/Pagina404';
+import BibliotecaAulas from './features/aulas/BibliotecaAulas';
 
 function Marquee() {
-  const items = ['Whisper Large V3', 'Qwen 3.8 27B', 'Spring Boot', 'PostgreSQL', 'Vite + React', 'Tailwind CSS', 'NotebookLM', 'Offline-First'];
+  const items = [
+    'Whisper Large V3',
+    'Qwen 3.8 27B',
+    'Spring Boot',
+    'PostgreSQL',
+    'Vite + React',
+    'Tailwind CSS',
+    'NotebookLM',
+    'Offline-First',
+  ];
   const row = [...items, ...items];
   return (
     <div className="border-y border-gold/20 bg-parchment py-6 overflow-hidden">
@@ -80,28 +90,7 @@ function ConteudoRotas() {
   if (rota === '/aulas' || rota.startsWith('/aulas/') || rota === '/professor') {
     return (
       <LayoutApp>
-        {rota === '/aulas' && (
-          <div className="anim-fade-up">
-            <h1 className="font-display text-4xl font-bold text-ink">Biblioteca de Aulas</h1>
-            <p className="mt-2 text-ink-soft">
-              Selecione uma disciplina ou busque uma aula para ver o resumo, slides e fotos do quadro.
-            </p>
-            {/* O componente completo da Fase 3 será renderizado aqui */}
-            <div className="mt-8 art-frame rounded-2xl p-8 text-center border border-gold/30">
-              <span className="text-xs uppercase tracking-widest2 text-gold font-semibold">
-                Fase 1 Pronta
-              </span>
-              <p className="mt-2 text-ink text-lg font-display">
-                Fundação, roteamento hash e cliente de API ativos com sucesso!
-              </p>
-              <div className="mt-6 flex justify-center gap-3">
-                <a href="#/entrar" className="ink-btn px-5 py-2.5 rounded-full text-xs font-semibold">
-                  Voltar à Escolha de Perfil
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
+        {rota === '/aulas' && <BibliotecaAulas />}
 
         {rota.startsWith('/aulas/') && (
           <div className="anim-fade-up">
