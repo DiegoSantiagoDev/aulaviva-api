@@ -1,5 +1,5 @@
 import { Cpu, Mic, Wifi, Smartphone, Server, Database, BrainCircuit, MonitorSmartphone } from 'lucide-react';
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const tech = [
   { icon: Cpu, name: 'ESP32 DevKit V1', use: 'Controle da captura e comunicação do áudio' },

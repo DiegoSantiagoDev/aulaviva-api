@@ -1,4 +1,4 @@
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const milestones = [
   { label: 'API inicial com Spring Boot', desc: 'Definir como aulas e arquivos serão representados.' },

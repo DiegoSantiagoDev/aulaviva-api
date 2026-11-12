@@ -1,5 +1,5 @@
 import { BookOpen, Compass, Palette, Users } from 'lucide-react';
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const features = [
   {

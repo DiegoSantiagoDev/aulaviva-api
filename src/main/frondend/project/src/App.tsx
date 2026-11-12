@@ -1,15 +1,15 @@
-import Nav from './components/Nav';
-import Hero from './components/Hero';
-import HowItWorks from './components/HowItWorks';
-import ProcessFlow from './components/ProcessFlow';
-import AIFeatures from './components/AIFeatures';
-import StudentPlatform from './components/StudentPlatform';
-import TeacherArea from './components/TeacherArea';
-import TechStack from './components/TechStack';
-import Privacy from './components/Privacy';
-import Roadmap from './components/Roadmap';
-import CTA from './components/CTA';
-import Footer from './components/Footer';
+import Nav from './components/Nav.tsx';
+import Hero from './components/Hero.tsx';
+import HowItWorks from './components/HowItWorks.tsx';
+import ProcessFlow from './components/ProcessFlow.tsx';
+import AIFeatures from './components/AIFeatures.tsx';
+import StudentPlatform from './components/StudentPlatform.tsx';
+import TeacherArea from './components/TeacherArea.tsx';
+import TechStack from './components/TechStack.tsx';
+import Privacy from './components/Privacy.tsx';
+import Roadmap from './components/Roadmap.tsx';
+import CTA from './components/CTA.tsx';
+import Footer from './components/Footer.tsx';
 
 function Marquee() {
   const items = ['ESP32', 'INMP441', 'I2S', 'Spring Boot', 'PostgreSQL', 'IA', 'LGPD', 'Wi-Fi', 'API REST'];

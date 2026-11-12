@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowDown, Mic, Sparkles } from 'lucide-react';
-import ArtFigure from './ArtFigure';
-import { useReveal } from '../hooks/useReveal';
+import ArtFigure from './ArtFigure.tsx';
+import { useReveal } from '../hooks/useReveal.ts';
 
 export default function Hero() {
   const { ref, inView } = useReveal(0.2);

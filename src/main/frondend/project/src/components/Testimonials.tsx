@@ -1,5 +1,5 @@
 import { Quote } from 'lucide-react';
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const testimonials = [
   {

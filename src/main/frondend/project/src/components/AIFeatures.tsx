@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Languages, ScanText, FileQuestion } from 'lucide-react';
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const tabs = [
   {

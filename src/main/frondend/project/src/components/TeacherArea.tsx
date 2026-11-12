@@ -1,6 +1,6 @@
 import { Camera, CheckCircle2, Clock, Upload } from 'lucide-react';
-import ArtFigure from './ArtFigure';
-import { useReveal } from '../hooks/useReveal';
+import ArtFigure from './ArtFigure.tsx';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const steps = [
   {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const stats = [
   { value: 12000, label: 'Alunos ativos', suffix: '+' },

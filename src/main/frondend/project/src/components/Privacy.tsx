@@ -1,5 +1,5 @@
 import { ShieldCheck, Lock, Eye, Trash2, Users } from 'lucide-react';
-import { useReveal } from '../hooks/useReveal';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const points = [
   { icon: ShieldCheck, title: 'Autorização e transparência', desc: 'A implantação depende de autorização da instituição e dos responsáveis, com comunicação clara a professores e estudantes.' },

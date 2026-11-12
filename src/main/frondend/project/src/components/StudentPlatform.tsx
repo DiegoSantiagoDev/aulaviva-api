@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, Volume2, FileText, ImageIcon, BookOpen, ChevronRight, Headphones } from 'lucide-react';
-import ArtFigure from './ArtFigure';
-import { useReveal } from '../hooks/useReveal';
+import ArtFigure from './ArtFigure.tsx';
+import { useReveal } from '../hooks/useReveal.ts';
 
 const classes = [
   {

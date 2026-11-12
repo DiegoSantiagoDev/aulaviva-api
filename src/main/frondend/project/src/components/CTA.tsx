@@ -1,5 +1,5 @@
-import ArtFigure from './ArtFigure';
-import { useReveal } from '../hooks/useReveal';
+import ArtFigure from './ArtFigure.tsx';
+import { useReveal } from '../hooks/useReveal.ts';
 
 export default function CTA() {
   const { ref, inView } = useReveal(0.25);
