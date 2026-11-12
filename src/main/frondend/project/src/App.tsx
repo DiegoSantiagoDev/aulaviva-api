@@ -16,6 +16,7 @@ import Footer from './components/Footer';
 import PaginaEntrar from './pages/PaginaEntrar';
 import Pagina404 from './pages/Pagina404';
 import BibliotecaAulas from './features/aulas/BibliotecaAulas';
+import DetalheAula from './features/aulas/DetalheAula';
 
 function Marquee() {
   const items = [
@@ -74,7 +75,7 @@ function ApresentacaoInstitucional() {
 }
 
 function ConteudoRotas() {
-  const { rota } = useRoteador();
+  const { rota, parametros } = useRoteador();
 
   // Rota 1: Apresentação inicial
   if (rota === '/') {
@@ -92,11 +93,8 @@ function ConteudoRotas() {
       <LayoutApp>
         {rota === '/aulas' && <BibliotecaAulas />}
 
-        {rota.startsWith('/aulas/') && (
-          <div className="anim-fade-up">
-            <h1 className="font-display text-3xl font-bold text-ink">Detalhes da Aula</h1>
-            <p className="mt-2 text-ink-soft">Carregando visualizador de resumo e slides...</p>
-          </div>
+        {rota.startsWith('/aulas/') && parametros.id && (
+          <DetalheAula id={parametros.id} />
         )}
 
         {rota === '/professor' && (

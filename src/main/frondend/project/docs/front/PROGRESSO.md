@@ -10,8 +10,8 @@
 | **F1** | Fundação (fontes locais, index.html, roteador hash, cliente API/mock, proxy) | ✅ Concluída | 12/11/2026 |
 | **F2** | Entrada e Apresentação (#/entrar, rolagem suave, correção de textos) | ✅ Concluída | 12/11/2026 |
 | **F3** | Biblioteca do Aluno (#/aulas, busca, agrupamento, filtros, estados) | ✅ Concluída | 12/11/2026 |
-| **F4** | Aula: Resumo e Fotos (parser tolerante, sem dangerouslySetInnerHTML, modal de fotos) | 🟨 Em andamento | — |
-| **F5** | Sistema de Slides (layouts CSS, teclado, toque, tela cheia, impressão) | ⬜ Pendente | — |
+| **F4** | Aula: Resumo e Fotos (parser tolerante, sem dangerouslySetInnerHTML, modal de fotos) | ✅ Concluída | 12/11/2026 |
+| **F5** | Sistema de Slides (layouts CSS, teclado, toque, tela cheia, impressão) | 🟨 Em andamento | — |
 | **F6** | Guia do NotebookLM (passos.json, marcações SVG, fallback de cópia) | ⬜ Pendente | — |
 | **F7** | Como foi Gerado (diálogo de transparência, abas, mock de prompts) | ⬜ Pendente | — |
 | **F8** | Painel do Professor (criar aula, upload de áudio com XHR, fotos com canvas) | ⬜ Pendente | — |
@@ -22,25 +22,31 @@
 
 ## 2. Fase Atual e Próximo Passo
 
-* **Fase Atual:** F4 — Aula: Resumo e Fotos (`#/aulas/:id`).
+* **Fase Atual:** F5 — Sistema Dinâmico de Slides (`#/aulas/:id?aba=slides`).
 * **Próximo Passo Exato:**
-  1. Criar o analisador tolerante de resumo didático em `src/lib/resumo.ts` (sem dangerouslySetInnerHTML, remoção de tags `<think>`, detecção tolerante de cabeçalhos, listas, fórmulas e índice dinâmico).
-  2. Implementar a aba "Resumo Didático" com índice interativo, botão de cópia com feedback visual e folha de estilo para impressão.
-  3. Implementar a aba "Fotos do Quadro" com galeria em grade responsiva, `loading="lazy"`, tratamento para imagens indisponíveis e visualizador modal nativo `<dialog>` com controle por teclado (setas e Esc) e foco preso.
-  4. Estruturar a navegação por abas em `#/aulas/:id` com persistência na URL (`?aba=`) e cabeçalho com aviso fixo de IA.
+  1. Implementar o visualizador de slides responsivo em `src/features/slides/VisualizadorSlides.tsx` com container 16:9 (`aspect-ratio: 16/9`), tipografia fluida com `clamp()` e container queries (`cqw`).
+  2. Implementar os 8 layouts visuais nos padrões editoriais do AulaViva (`capa`, `conteudo`, `definicao`, `exemplo`, `formula`, `duas-colunas`, `revisao`, `perguntas`).
+  3. Criar a heurística inteligente que detecta o conteúdo textual e seleciona o melhor layout automaticamente quando a API retornar apenas o genérico `content`.
+  4. Adicionar controles de navegação completos: botões anterior/próximo, atalhos de teclado (setas ← →, Home, End), gestos de toque (swipe mobile), modo tela cheia via Fullscreen API, modo foco e miniaturas em miniatura.
+  5. Conectar a aba `slides` em `DetalheAula.tsx` e validar com `typecheck`, `lint` e `build`.
 
 ---
 
 ## 3. Decisões Tomadas e Divergências Identificadas
 
-1. **Ordenação e Agrupamento da Biblioteca:**
-   - A biblioteca agrupa as matérias em ordem alfabética estrita sem diferenciar maiúsculas ou acentos (`localeCompare('pt-BR', { sensitivity: 'base' })`).
-   - Dentro de cada disciplina, as aulas são ordenadas estritamente pela data decrescente de criação (`createdAt`).
-2. **Debounce e Normalização de Busca:**
-   - Implementado atraso de 200ms na digitação para evitar re-renderizações desnecessárias em dispositivos modestos.
-   - Normalização NFD para ignorar diacríticos (ex: "funcao" encontra "Função").
-3. **Resiliência e Polling Discreto:**
-   - A listagem atualiza automaticamente em segundo plano a cada 30 segundos apenas se a aba estiver visível (`document.visibilityState === 'visible'`) e recarrega imediatamente ao recuperar o foco do navegador.
+1. **Parser de Resumo Seguro e Tolerante (`src/lib/resumo.ts`):**
+   - **Zero `dangerouslySetInnerHTML`**: todo o conteúdo gerado pela IA é sanitizado e convertido em nós React puros (`h3`, `p`, `ul`, `li`).
+   - Remove automaticamente blocos `<think>...</think>` que possam ter vazado do raciocínio da IA.
+   - Preserva caracteres e símbolos matemáticos e científicos (`≠`, `x²`, `-3/2`, `Δ`, `√`) sem corrompê-los com interpretadores de markdown.
+   - Gera índice de navegação dinâmico para resumos com 3 ou mais seções.
+2. **Cópia de Conteúdo Resiliente (`src/lib/clipboard.ts`):**
+   - Detecta e contorna a restrição de HTTPS do `navigator.clipboard` em redes locais (`http://IP:8080`), implementando fallback com `<textarea readonly>` invisível e `document.execCommand('copy')`.
+3. **Galeria de Fotos do Quadro (`AbaFotos.tsx`):**
+   - Utiliza `<dialog>` nativo do HTML5 com foco retido, fechamento por `Esc` ou botão, e navegação entre imagens pelas setas do teclado.
+   - Tratamento gracioso para imagens que não carregarem (`onError`), substituindo por aviso sem quebrar a grade.
+4. **Resguardo Pedagógico e Ético do Aluno:**
+   - Em caso de aula com status `CREATED` ou `FAILED`, a interface exibe mensagem amigável e nunca expõe o `failureReason` técnico do servidor ao aluno.
+   - Aviso fixo obrigatório sobre IA presente no topo de todas as aulas.
 
 ---
 
@@ -56,40 +62,44 @@ cd src/main/frondend/project
   ```powershell
   npm.cmd run typecheck
   ```
-  *(Resultado na F3: 0 erros)*
+  *(Resultado na F4: 0 erros)*
 * **Linting:**
   ```powershell
   npm.cmd run lint
   ```
-  *(Resultado na F3: 0 erros, 0 avisos)*
+  *(Resultado na F4: 0 erros, 0 avisos)*
 * **Build de Produção:**
   ```powershell
   npm.cmd run build
   ```
-  *(Resultado na F3: 0 erros, bundle compilado em 6.49s)*
+  *(Resultado na F4: 0 erros, bundle gerado com sucesso em 6.54s)*
 
 ---
 
 ## 5. Log por Fase
 
 ### Fase 1: Fundação Técnica e Infraestrutura (12/11/2026)
-* Fontes locais `@fontsource`, `index.html` corrigido com favicon SVG próprio, proxy no Vite, cliente de API com XHR progress e mock integrado, roteador hash com acessibilidade de foco e layout base da aplicação. Commit: `be5ae67`.
+* Fontes locais `@fontsource`, `index.html` saneado com favicon SVG próprio, proxy no Vite, cliente de API com XHR progress e mock integrado, roteador hash com acessibilidade de foco e layout base da aplicação. Commit: `be5ae67`.
 
 ### Fase 2: Entrada e Alinhamento da Apresentação (12/11/2026)
 * `PaginaEntrar.tsx` integrada com seleção de perfil Aluno/Professor e aviso de segurança. Botão "Entrar" funcional em todos os cabeçalhos e chamadas. Textos institucionais corrigidos para Resumo, Slides e Vídeo no NotebookLM. Commit: `72dcba3`.
 
 ### Fase 3: Biblioteca do Aluno (12/11/2026)
+* Biblioteca de aulas `#/aulas` com listagem agrupada por disciplina em ordem alfabética e temporal, busca com debounce de 200ms e normalização de acentos, chips com contagem, esqueletos animados e auto-refresh de 30s. Commit: `dc57d4f`.
+
+### Fase 4: Aula: Resumo e Fotos (12/11/2026)
 * **Atividades Realizadas:**
-  - Implementado `src/features/aulas/CartaoAula.tsx` com formatação de data brasileira (América/Fortaleza), badges de mídias e link acessível.
-  - Implementado `src/features/aulas/FiltroDisciplinas.tsx` com chips de contagem e botão "Todas".
-  - Implementado `src/features/aulas/EsqueletoAulas.tsx` com animação de shimmer suave para carregamento.
-  - Implementado `src/features/aulas/BibliotecaAulas.tsx` com consumo de `api.listarAulas()`, agrupamento por matéria, ordenação temporal, busca com debounce de 200ms, estados de erro/vazio e atualização automática a cada 30s.
-  - Integração no `src/App.tsx`.
+  - Implementado `src/lib/resumo.ts`: analisador tolerante de resumo sem dangerouslySetInnerHTML, remoção de `<think>`, detecção inteligente de cabeçalhos e listas, preservando fórmulas matemáticas.
+  - Implementado `src/lib/clipboard.ts`: cópia resiliente com suporte a redes locais sem HTTPS.
+  - Implementado `src/features/aulas/AbaResumo.tsx`: renderização pura de nós React, índice de seções automático, botão de cópia com feedback visual e folha de estilo para impressão limpa.
+  - Implementado `src/features/aulas/AbaFotos.tsx`: galeria com lazy-loading e modal nativo `<dialog>` com navegação por teclado e zoom acessível.
+  - Implementado `src/features/aulas/DetalheAula.tsx`: controle de status (`DONE`, `PROCESSING` com polling de 3s e mascote reflexivo, `FAILED`/`CREATED` amigável), abas sincronizadas com `?aba=` e banner permanente de IA.
+  - Conectado em `src/App.tsx`.
 * **Resultado dos Comandos:**
   - `typecheck`: Sucesso (0 erros).
   - `lint`: Sucesso (0 erros, 0 avisos).
-  - `build`: Sucesso (6.49s).
-* **Commit:** `feat(biblioteca): implementa biblioteca do aluno com busca, filtros e agrupamento`
+  - `build`: Sucesso (6.54s).
+* **Commit:** `feat(aula): implementa pagina da aula com abas, parser de resumo seguro e modal de fotos`
 
 ---
 
@@ -108,6 +118,6 @@ Regras de ouro:
 - Sem serviços externos, sem CDN e sem fontes externas em tempo de execução.
 - Mantenha sempre atualizado o arquivo docs/front/PROGRESSO.md ao fim de cada fase.
 
-Fase atual: Fase 4 (Aula: Resumo e Fotos).
-Próximo passo: Implementar o parser tolerante de resumo (lib/resumo.ts), a página da aula #/aulas/:id com abas e o visualizador modal de fotos do quadro.
+Fase atual: Fase 5 (Sistema de Slides).
+Próximo passo: Implementar o visualizador de slides editorial responsivo em 16:9, os 8 layouts visuais, a heurística de layout, controles de teclado/toque/tela cheia e exportação para impressão.
 ```
