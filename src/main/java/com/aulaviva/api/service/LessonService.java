@@ -4,6 +4,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import com.aulaviva.api.dto.slide.SlidePresentation;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -25,6 +27,7 @@ import com.aulaviva.api.model.LessonStatus;
 import com.aulaviva.api.model.MediaKind;
 import com.aulaviva.api.repository.LessonImageRepository;
 import com.aulaviva.api.repository.LessonRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class LessonService {
@@ -35,16 +38,19 @@ public class LessonService {
     private final LessonImageRepository images;
     private final FileStorageService storage;
     private final LessonProcessingService processing;
+    private final ObjectMapper objectMapper;
 
     public LessonService(
             LessonRepository lessons,
             LessonImageRepository images,
             FileStorageService storage,
-            LessonProcessingService processing) {
+            LessonProcessingService processing,
+            ObjectMapper objectMapper) {
         this.lessons = lessons;
         this.images = images;
         this.storage = storage;
         this.processing = processing;
+        this.objectMapper = objectMapper;
     }
 
     public LessonResponse create(CreateLessonRequest request) {
@@ -134,6 +140,24 @@ public class LessonService {
     }
 
     private LessonResponse toResponse(Lesson lesson) {
-        return LessonMapper.toResponse(lesson, images.findByLessonIdOrderByIdAsc(lesson.getId()));
+        SlidePresentation presentation = parsePresentation(lesson.getPresentation());
+
+        return LessonMapper.toResponse(
+                lesson,
+                images.findByLessonIdOrderByIdAsc(lesson.getId()),
+                presentation
+        );
+    }
+
+    private SlidePresentation parsePresentation(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+
+        try {
+            return objectMapper.readValue(json, SlidePresentation.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Erro ao converter apresentação", e);
+        }
     }
 }

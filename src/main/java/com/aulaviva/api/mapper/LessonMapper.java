@@ -7,13 +7,19 @@ import com.aulaviva.api.dto.LessonListItem;
 import com.aulaviva.api.dto.LessonResponse;
 import com.aulaviva.api.model.Lesson;
 import com.aulaviva.api.model.LessonImage;
+import com.aulaviva.api.dto.slide.SlidePresentation;
 
 public final class LessonMapper {
 
     private LessonMapper() {
     }
 
-    public static LessonResponse toResponse(Lesson lesson, List<LessonImage> images) {
+    public static LessonResponse toResponse(
+            Lesson lesson,
+            List<LessonImage> images,
+            SlidePresentation presentation
+    ) {
+
         List<ImageResponse> imageResponses = images.stream()
                 .map(image -> toImageResponse(lesson.getId(), image))
                 .toList();
@@ -25,6 +31,7 @@ public final class LessonMapper {
                 lesson.getStatus(),
                 lesson.getAudioFileName() != null,
                 lesson.getSummary(),
+                presentation,
                 lesson.getFailureReason(),
                 imageResponses,
                 lesson.getCreatedAt());
