@@ -1,24 +1,29 @@
-import Nav from './components/Nav.tsx';
-import Hero from './components/Hero.tsx';
-import HowItWorks from './components/HowItWorks.tsx';
-import ProcessFlow from './components/ProcessFlow.tsx';
-import AIFeatures from './components/AIFeatures.tsx';
-import StudentPlatform from './components/StudentPlatform.tsx';
-import TeacherArea from './components/TeacherArea.tsx';
-import TechStack from './components/TechStack.tsx';
-import Privacy from './components/Privacy.tsx';
-import Roadmap from './components/Roadmap.tsx';
-import CTA from './components/CTA.tsx';
-import Footer from './components/Footer.tsx';
+import { RoteadorProvider, useRoteador } from './app/Roteador';
+import LayoutApp from './app/LayoutApp';
+import Nav from './components/Nav';
+import Hero from './components/Hero';
+import HowItWorks from './components/HowItWorks';
+import ProcessFlow from './components/ProcessFlow';
+import AIFeatures from './components/AIFeatures';
+import StudentPlatform from './components/StudentPlatform';
+import TeacherArea from './components/TeacherArea';
+import TechStack from './components/TechStack';
+import Privacy from './components/Privacy';
+import Roadmap from './components/Roadmap';
+import CTA from './components/CTA';
+import Footer from './components/Footer';
+
+import PaginaEntrar from './pages/PaginaEntrar';
+import Pagina404 from './pages/Pagina404';
 
 function Marquee() {
-  const items = ['ESP32', 'INMP441', 'I2S', 'Spring Boot', 'PostgreSQL', 'IA', 'LGPD', 'Wi-Fi', 'API REST'];
+  const items = ['Whisper Large V3', 'Qwen 3.8 27B', 'Spring Boot', 'PostgreSQL', 'Vite + React', 'Tailwind CSS', 'NotebookLM', 'Offline-First'];
   const row = [...items, ...items];
   return (
     <div className="border-y border-gold/20 bg-parchment py-6 overflow-hidden">
       <div className="flex gap-12 whitespace-nowrap anim-marquee">
         {row.map((name, i) => (
-          <span key={i} className="font-display text-3xl text-ink-soft/50 flex items-center gap-12">
+          <span key={i} className="font-display text-2xl sm:text-3xl text-ink-soft/50 flex items-center gap-12">
             {name}
             <span className="w-2 h-2 rounded-full bg-gold/50" />
           </span>
@@ -28,24 +33,116 @@ function Marquee() {
   );
 }
 
-function App() {
+function ApresentacaoInstitucional() {
   return (
     <div className="min-h-screen bg-parchment">
       <Nav />
       <Hero />
       <Marquee />
-      <HowItWorks />
+      <div id="funcionamento">
+        <HowItWorks />
+      </div>
       <ProcessFlow />
-      <AIFeatures />
-      <StudentPlatform />
+      <div id="ia">
+        <AIFeatures />
+      </div>
+      <div id="plataforma">
+        <StudentPlatform />
+      </div>
       <TeacherArea />
-      <TechStack />
+      <div id="tecnologia">
+        <TechStack />
+      </div>
       <Privacy />
-      <Roadmap />
+      <div id="etapas">
+        <Roadmap />
+      </div>
       <CTA />
       <Footer />
     </div>
   );
 }
 
-export default App;
+function ConteudoRotas() {
+  const { rota } = useRoteador();
+
+  // Rota 1: Apresentação inicial
+  if (rota === '/') {
+    return <ApresentacaoInstitucional />;
+  }
+
+  // Rota 2: Porta de entrada (Sou aluno / Sou professor)
+  if (rota === '/entrar') {
+    return <PaginaEntrar />;
+  }
+
+  // Rotas da aplicação (Aluno e Professor) dentro do LayoutApp
+  if (rota === '/aulas' || rota.startsWith('/aulas/') || rota === '/professor') {
+    return (
+      <LayoutApp>
+        {rota === '/aulas' && (
+          <div className="anim-fade-up">
+            <h1 className="font-display text-4xl font-bold text-ink">Biblioteca de Aulas</h1>
+            <p className="mt-2 text-ink-soft">
+              Selecione uma disciplina ou busque uma aula para ver o resumo, slides e fotos do quadro.
+            </p>
+            {/* O componente completo da Fase 3 será renderizado aqui */}
+            <div className="mt-8 art-frame rounded-2xl p-8 text-center border border-gold/30">
+              <span className="text-xs uppercase tracking-widest2 text-gold font-semibold">
+                Fase 1 Pronta
+              </span>
+              <p className="mt-2 text-ink text-lg font-display">
+                Fundação, roteamento hash e cliente de API ativos com sucesso!
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <a href="#/entrar" className="ink-btn px-5 py-2.5 rounded-full text-xs font-semibold">
+                  Voltar à Escolha de Perfil
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {rota.startsWith('/aulas/') && (
+          <div className="anim-fade-up">
+            <h1 className="font-display text-3xl font-bold text-ink">Detalhes da Aula</h1>
+            <p className="mt-2 text-ink-soft">Carregando visualizador de resumo e slides...</p>
+          </div>
+        )}
+
+        {rota === '/professor' && (
+          <div className="anim-fade-up">
+            <h1 className="font-display text-4xl font-bold text-ink">Painel do Professor</h1>
+            <p className="mt-2 text-ink-soft">
+              Cadastre novas aulas, envie arquivos de áudio com acompanhamento de progresso e fotos do quadro.
+            </p>
+            <div className="mt-8 art-frame rounded-2xl p-8 text-center border border-gold/30">
+              <span className="text-xs uppercase tracking-widest2 text-gold font-semibold">
+                Área Docente
+              </span>
+              <p className="mt-2 text-ink text-lg font-display">
+                O painel de envio e acompanhamento será implementado na Fase 8.
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <a href="#/entrar" className="ink-btn px-5 py-2.5 rounded-full text-xs font-semibold">
+                  Voltar à Escolha de Perfil
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+      </LayoutApp>
+    );
+  }
+
+  // Rota inexistente (404)
+  return <Pagina404 />;
+}
+
+export default function App() {
+  return (
+    <RoteadorProvider>
+      <ConteudoRotas />
+    </RoteadorProvider>
+  );
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <circle cx="32" cy="32" r="30" fill="#1a1612" />
+  <circle cx="32" cy="32" r="28" stroke="#c9a227" stroke-width="1.5" stroke-dasharray="4 2" />
+  <!-- Book base -->
+  <path d="M18 42C23 40 28 40.5 32 43C36 40.5 41 40 46 42V25C41 23 36 23.5 32 26C28 23.5 23 23 18 25V42Z" fill="#f5efe4" stroke="#c9a227" stroke-width="1.5" stroke-linejoin="round" />
+  <line x1="32" y1="26" x2="32" y2="43" stroke="#c9a227" stroke-width="1.5" />
+  <!-- Quill pen touching the book -->
+  <path d="M44 14C38 18 35 24 33 27C34 29 36 29 37 27C39 25 45 19 47 15C48 14 45 13 44 14Z" fill="#c9a227" />
+  <circle cx="32" cy="18" r="1.5" fill="#c9a227" />
+</svg>
