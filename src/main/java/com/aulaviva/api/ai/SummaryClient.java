@@ -3,7 +3,13 @@ package com.aulaviva.api.ai;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface SummaryClient {
+import com.aulaviva.api.dto.slide.LessonStudyMaterial;
 
-    String summarize(String title, String subject, String transcript, List<Path> boardImages);
+public interface SummaryClient {
+    LessonStudyMaterial summarize(
+            String title,
+            String subject,
+            String transcript,
+            List<Path> boardImages
+    );
 }

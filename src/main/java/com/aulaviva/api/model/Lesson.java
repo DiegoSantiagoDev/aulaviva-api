@@ -54,6 +54,9 @@ public class Lesson {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String presentation;
+
     protected Lesson() {
     }
 
@@ -84,14 +87,17 @@ public class Lesson {
         this.transcript = null;
         this.summary = null;
         this.failureReason = null;
+        this.presentation = null;
         this.status = LessonStatus.PROCESSING;
     }
 
-    public void markDone(String transcript, String summary) {
+    public void markDone(String transcript, String summary, String presentation) {
         this.transcript = transcript;
         this.summary = summary;
+        this.presentation = presentation;
         this.failureReason = null;
         this.status = LessonStatus.DONE;
+
     }
 
     public void markFailed(String reason) {
@@ -147,5 +153,9 @@ public class Lesson {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getPresentation() {
+        return presentation;
     }
 }

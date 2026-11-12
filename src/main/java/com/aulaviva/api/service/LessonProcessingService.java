@@ -16,6 +16,8 @@ import com.aulaviva.api.model.Lesson;
 import com.aulaviva.api.model.MediaKind;
 import com.aulaviva.api.repository.LessonImageRepository;
 import com.aulaviva.api.repository.LessonRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.aulaviva.api.dto.slide.LessonStudyMaterial;
 
 @Service
 public class LessonProcessingService {
@@ -27,18 +29,21 @@ public class LessonProcessingService {
     private final FileStorageService storage;
     private final TranscriptionClient transcriptionClient;
     private final SummaryClient summaryClient;
+    private final ObjectMapper objectMapper;
 
     public LessonProcessingService(
             LessonRepository lessons,
             LessonImageRepository images,
             FileStorageService storage,
             TranscriptionClient transcriptionClient,
-            SummaryClient summaryClient) {
+            SummaryClient summaryClient,
+            ObjectMapper objectMapper) {
         this.lessons = lessons;
         this.images = images;
         this.storage = storage;
         this.transcriptionClient = transcriptionClient;
         this.summaryClient = summaryClient;
+        this.objectMapper = objectMapper;
     }
 
     @Async(AsyncConfig.PROCESSING_EXECUTOR)
@@ -58,11 +63,15 @@ public class LessonProcessingService {
                     .map(image -> storage.resolve(MediaKind.IMAGE, image.getFileName()))
                     .toList();
 
-            String summary = summaryClient.summarize(
+            LessonStudyMaterial material = summaryClient.summarize(
                     lesson.getTitle(), lesson.getSubject(), transcript, boardImages);
 
-            lesson.markDone(transcript, summary);
+            String presentation = objectMapper.writeValueAsString(material.presentation());
+
+            lesson.markDone(transcript, material.summary(), presentation);
+
             lessons.save(lesson);
+
             log.info("Aula {} processada com sucesso", lessonId);
         } catch (Exception e) {
             log.error("Falha ao processar a aula {}", lessonId, e);
