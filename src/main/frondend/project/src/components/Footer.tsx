@@ -1,8 +1,26 @@
-import { Github, Instagram, Twitter } from 'lucide-react';
+import { useRoteador } from '../app/Roteador';
+import { Sparkles, ArrowRight } from 'lucide-react';
+
+const exploreLinks = [
+  { label: 'Como funciona', id: 'funcionamento' },
+  { label: 'Inteligência Artificial', id: 'ia' },
+  { label: 'Plataforma do Aluno', id: 'plataforma' },
+  { label: 'Tecnologia', id: 'tecnologia' },
+  { label: 'Etapas Previstas', id: 'etapas' },
+];
 
 export default function Footer() {
+  const { navegar } = useRoteador();
+
+  const rolarPara = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <footer className="bg-ink text-parchment/70 px-6 py-16">
+    <footer className="bg-ink text-parchment/70 px-6 py-16 border-t border-gold/20">
       <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-10">
         <div className="md:col-span-2">
           <div className="font-display text-3xl font-bold text-parchment flex items-center gap-2">
@@ -10,49 +28,74 @@ export default function Footer() {
             AulaViva
           </div>
           <p className="mt-2 font-display text-lg italic text-gold-soft">"Nenhuma aula precisa ser perdida."</p>
-          <p className="mt-4 max-w-sm leading-relaxed text-sm">
-            Sistema inteligente de apoio à aprendizagem. Registra, processa e
-            disponibiliza o conteúdo das aulas com inteligência artificial.
+          <p className="mt-4 max-w-sm leading-relaxed text-sm text-parchment/80">
+            Plataforma educacional para recuperação de conteúdo escolar com resumos didáticos,
+            apresentações de slides dinâmicas e roteiros para vídeos explicativos no Google NotebookLM.
           </p>
-          <div className="flex gap-3 mt-6">
-            {[Instagram, Twitter, Github].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="w-10 h-10 rounded-full border border-parchment/20 flex items-center justify-center hover:bg-gold hover:text-ink hover:border-gold transition-all duration-300"
-              >
-                <Icon className="w-4 h-4" />
-              </a>
-            ))}
+
+          <div className="mt-6">
+            <button
+              onClick={() => navegar('/entrar')}
+              className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full bg-gold/15 text-gold-soft hover:bg-gold hover:text-ink transition-all duration-300"
+            >
+              <span>Entrar no AulaViva</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
         <div>
-          <h4 className="text-parchment font-semibold mb-4">Explorar</h4>
-          <ul className="space-y-2 text-sm">
-            {['Funcionamento', 'Inteligência', 'Plataforma', 'Tecnologia', 'Etapas'].map((l) => (
-              <li key={l}>
-                <a href="#" className="hover:text-gold transition-colors duration-300">{l}</a>
+          <h4 className="text-parchment font-semibold mb-4 text-sm uppercase tracking-wider">Explorar</h4>
+          <ul className="space-y-2.5 text-sm">
+            {exploreLinks.map((l) => (
+              <li key={l.id}>
+                <button
+                  onClick={() => rolarPara(l.id)}
+                  className="hover:text-gold transition-colors duration-300 text-left"
+                >
+                  {l.label}
+                </button>
               </li>
             ))}
           </ul>
         </div>
 
         <div>
-          <h4 className="text-parchment font-semibold mb-4">Institucional</h4>
-          <ul className="space-y-2 text-sm">
-            {['Sobre', 'Privacidade e LGPD', 'Contato', 'Termos'].map((l) => (
-              <li key={l}>
-                <a href="#" className="hover:text-gold transition-colors duration-300">{l}</a>
-              </li>
-            ))}
+          <h4 className="text-parchment font-semibold mb-4 text-sm uppercase tracking-wider">Acesso Rápido</h4>
+          <ul className="space-y-2.5 text-sm">
+            <li>
+              <button
+                onClick={() => navegar('/aulas')}
+                className="hover:text-gold transition-colors duration-300 text-left flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3 h-3 text-gold" />
+                <span>Biblioteca do Aluno</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => navegar('/professor')}
+                className="hover:text-gold transition-colors duration-300 text-left flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3 h-3 text-gold" />
+                <span>Painel do Professor</span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => navegar('/entrar')}
+                className="hover:text-gold transition-colors duration-300 text-left"
+              >
+                Porta de Entrada
+              </button>
+            </li>
           </ul>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-parchment/10 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p className="text-xs">© 2026 AulaViva. Mais aprendizagem, preparação e oportunidades para todos.</p>
-        <p className="text-xs text-gold-soft tracking-widest2 uppercase">Captura · Processamento · Aprendizagem</p>
+      <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-parchment/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-parchment/60">
+        <p>&copy; 2026 AulaViva. Todos os direitos reservados. Recuperação e síntese didática com inteligência artificial.</p>
+        <p className="text-gold-soft tracking-widest2 uppercase">Captura &middot; Processamento &middot; Aprendizagem</p>
       </div>
     </footer>
   );
