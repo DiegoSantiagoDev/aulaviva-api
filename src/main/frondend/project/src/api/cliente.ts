@@ -67,17 +67,7 @@ export const api = {
    */
   listarAulas: async (): Promise<LessonListItem[]> => {
     if (recursos.usarMock) return mockApi.listarAulas();
-    try {
-      return await requisicaoJson<LessonListItem[]>('/api/lessons');
-    } catch (err) {
-      // Fallback gracioso para mock se o backend não estiver rodando
-      const apiErr = normalizarErro(err, 'Erro ao carregar aulas.');
-      if (apiErr.status === 0 || apiErr.status === 404) {
-        console.warn('Backend indisponível, utilizando dados de demonstração (mock).');
-        return mockApi.listarAulas();
-      }
-      throw apiErr;
-    }
+    return requisicaoJson<LessonListItem[]>('/api/lessons');
   },
 
   /**
@@ -85,15 +75,7 @@ export const api = {
    */
   obterAula: async (id: number): Promise<LessonResponse> => {
     if (recursos.usarMock) return mockApi.obterAula(id);
-    try {
-      return await requisicaoJson<LessonResponse>(`/api/lessons/${id}`);
-    } catch (err) {
-      const apiErr = normalizarErro(err, 'Erro ao carregar aula.');
-      if (apiErr.status === 0) {
-        return mockApi.obterAula(id);
-      }
-      throw apiErr;
-    }
+    return requisicaoJson<LessonResponse>(`/api/lessons/${id}`);
   },
 
   /**
@@ -101,17 +83,11 @@ export const api = {
    */
   criarAula: async (dados: CreateLessonRequest): Promise<LessonResponse> => {
     if (recursos.usarMock) return mockApi.criarAula(dados);
-    try {
-      return await requisicaoJson<LessonResponse>('/api/lessons', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados),
-      });
-    } catch (err) {
-      const apiErr = normalizarErro(err, 'Erro ao criar aula.');
-      if (apiErr.status === 0) return mockApi.criarAula(dados);
-      throw apiErr;
-    }
+    return requisicaoJson<LessonResponse>('/api/lessons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    });
   },
 
   /**
@@ -160,9 +136,10 @@ export const api = {
       };
 
       xhr.onerror = () => {
-        // Se a API estiver offline em dev, simular com mock
-        console.warn('Upload real falhou, simulando via mock.');
-        mockApi.enviarAudio(id, arquivo, noProgresso).then(resolve).catch(reject);
+        reject({
+          status: 0,
+          message: 'Não foi possível enviar o áudio. Verifique a conexão e tente novamente.',
+        } as ApiError);
       };
 
       const formData = new FormData();
@@ -176,15 +153,9 @@ export const api = {
    */
   reprocessar: async (id: number): Promise<LessonResponse> => {
     if (recursos.usarMock) return mockApi.reprocessar(id);
-    try {
-      return await requisicaoJson<LessonResponse>(`/api/lessons/${id}/reprocess`, {
-        method: 'POST',
-      });
-    } catch (err) {
-      const apiErr = normalizarErro(err, 'Erro ao reprocessar aula.');
-      if (apiErr.status === 0) return mockApi.reprocessar(id);
-      throw apiErr;
-    }
+    return requisicaoJson<LessonResponse>(`/api/lessons/${id}/reprocess`, {
+      method: 'POST',
+    });
   },
 
   /**
@@ -192,32 +163,27 @@ export const api = {
    */
   enviarImagem: async (id: number, arquivo: File): Promise<ImageResponse> => {
     if (recursos.usarMock) return mockApi.enviarImagem(id, arquivo);
-    try {
-      const formData = new FormData();
-      formData.append('file', arquivo);
 
-      const res = await fetch(`/api/lessons/${id}/images`, {
-        method: 'POST',
-        body: formData,
-      });
+    const formData = new FormData();
+    formData.append('file', arquivo);
 
-      if (!res.ok) {
-        let msg = 'Erro ao enviar foto do quadro.';
-        try {
-          const errJson = await res.json();
-          msg = errJson.message || msg;
-        } catch {
-          // Nada
-        }
-        throw { status: res.status, message: msg } as ApiError;
+    const res = await fetch(`/api/lessons/${id}/images`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      let msg = 'Erro ao enviar foto do quadro.';
+      try {
+        const errJson = await res.json();
+        msg = errJson.message || msg;
+      } catch {
+        // Sem corpo JSON
       }
-
-      return (await res.json()) as ImageResponse;
-    } catch (err) {
-      const apiErr = normalizarErro(err, 'Falha no envio da imagem.');
-      if (apiErr.status === 0) return mockApi.enviarImagem(id, arquivo);
-      throw apiErr;
+      throw { status: res.status, message: msg } as ApiError;
     }
+
+    return (await res.json()) as ImageResponse;
   },
 
   /**
@@ -225,15 +191,8 @@ export const api = {
    */
   obterPrompts: async (id: number): Promise<PromptsResponse> => {
     if (recursos.usarMock) return mockApi.obterPrompts(id);
-    try {
-      return await requisicaoJson<PromptsResponse>(`/api/lessons/${id}/prompts`);
-    } catch (err) {
-      // Endpoint planejado: se 404 ou 0, trata com dados do mock
-      const apiErr = normalizarErro(err, 'Prompts não disponíveis.');
-      if (apiErr.status === 404 || apiErr.status === 0) {
-        return mockApi.obterPrompts(id);
-      }
-      throw apiErr;
-    }
+    // Endpoint ainda não existe no back-end real. O 404/405 é propagado
+    // para a tela "Como foi gerado" tratar como "ainda não disponível".
+    return requisicaoJson<PromptsResponse>(`/api/lessons/${id}/prompts`);
   },
 };

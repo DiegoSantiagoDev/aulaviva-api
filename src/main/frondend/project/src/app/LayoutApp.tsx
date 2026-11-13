@@ -14,7 +14,7 @@ export default function LayoutApp({ children }: LayoutAppProps) {
   return (
     <div className="min-h-screen bg-parchment text-ink flex flex-col paper-grain selection:bg-gold/30">
       {/* Cabeçalho enxuto da aplicação interna */}
-      <header className="sticky top-0 z-40 bg-parchment/90 backdrop-blur-md border-b border-gold/25 transition-all">
+      <header className="sticky top-0 z-40 bg-parchment/90 backdrop-blur-md border-b border-gold/25 transition-all no-print">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Logotipo */}
           <button

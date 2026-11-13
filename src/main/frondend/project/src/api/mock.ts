@@ -72,6 +72,10 @@ PERGUNTAS DE REVISÃO
             'Quando a > 0, conforme x aumenta, f(x) também cresce.',
             'Quando a < 0, a reta inclina para a esquerda e a função é decrescente.',
             'O coeficiente "b" fixa a altura inicial em que a reta intercepta o eixo Y.',
+            'Se a = 0, a expressão deixa de ser uma função do 1º grau e vira uma função constante.',
+            'Quanto maior o valor absoluto de a, mais inclinada é a reta no plano cartesiano.',
+            'Duas retas são paralelas quando possuem o mesmo coeficiente angular a.',
+            'Duas retas são perpendiculares quando o produto dos coeficientes angulares é -1.',
           ],
         },
         {
@@ -209,6 +213,7 @@ export const mockApi = {
         createdAt: l.createdAt,
         hidden: l.hidden,
         hasSlides: Boolean(l.presentation && l.presentation.slides.length > 0),
+        hasImages: l.images.length > 0,
       })),
       350
     );

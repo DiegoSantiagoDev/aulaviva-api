@@ -233,7 +233,7 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
       </div>
 
       {/* Cabeçalho da Aula */}
-      <header className="space-y-4">
+      <header className="space-y-4 no-print">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-semibold px-3 py-1 rounded-full bg-gold/15 text-terra-deep uppercase text-xs tracking-wider">
             {aula.subject}

@@ -56,22 +56,24 @@ export default function CartaoAula({ aula }: CartaoAulaProps) {
       {/* Badges de recursos disponíveis & Ação */}
       <div className="mt-6 pt-4 border-t border-gold/20 flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          {aula.hasSlides !== false && (
+          {aula.hasSlides === true && (
             <span
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-ink/5 text-ink-soft text-[11px]"
               title="Apresentação de slides disponível"
             >
-              <Presentation className="w-3 h-3 text-gold" />
+              <Presentation className="w-3 h-3 text-gold-deep" aria-hidden="true" />
               <span>Slides</span>
             </span>
           )}
-          <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-ink/5 text-ink-soft text-[11px]"
-            title="Fotos do quadro anexadas"
-          >
-            <ImageIcon className="w-3 h-3 text-gold" />
-            <span>Quadro</span>
-          </span>
+          {aula.hasImages === true && (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-ink/5 text-ink-soft text-[11px]"
+              title="Fotos do quadro anexadas"
+            >
+              <ImageIcon className="w-3 h-3 text-gold-deep" aria-hidden="true" />
+              <span>Quadro</span>
+            </span>
+          )}
         </div>
 
         <span className="font-semibold text-ink group-hover:text-terra inline-flex items-center gap-1 transition-colors">

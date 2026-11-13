@@ -10,6 +10,7 @@ export interface ImageResponse {
   url: string;
 }
 
+/** Layouts visuais efetivamente renderizados pelo visualizador. */
 export type SlideLayout =
   | 'capa'
   | 'conteudo'
@@ -18,12 +19,15 @@ export type SlideLayout =
   | 'formula'
   | 'duas-colunas'
   | 'revisao'
-  | 'perguntas'
-  | string;
+  | 'perguntas';
 
 export interface SlideItem {
   title: string;
-  layout?: SlideLayout;
+  /**
+   * Layout bruto vindo da IA. Pode ser qualquer texto; a heurística em
+   * `features/slides/heuristicaLayout.ts` valida e escolhe o layout final.
+   */
+  layout?: string;
   content: string[];
 }
 
@@ -40,8 +44,10 @@ export interface LessonListItem {
   createdAt: string;
   /** Campo planejado para visibilidade */
   hidden?: boolean;
-  /** Campo de apoio para indicar se possui slides */
+  /** Campo planejado para indicar se possui slides */
   hasSlides?: boolean;
+  /** Campo planejado para indicar se possui fotos do quadro */
+  hasImages?: boolean;
 }
 
 export interface LessonResponse {
@@ -51,12 +57,19 @@ export interface LessonResponse {
   status: LessonStatus;
   hasAudio: boolean;
   summary: string | null;
+  /**
+   * Hoje só o modo de exemplo (`?mock=1`) fornece este campo.
+   * O back-end real ainda não gera slides; quando ausente, a UI mostra
+   * uma mensagem honesta de indisponibilidade.
+   */
   presentation?: SlidePresentation | null;
   failureReason: string | null;
   images: ImageResponse[];
   createdAt: string;
   /** Campo planejado para visibilidade */
   hidden?: boolean;
+  /** Campo planejado para indicar se possui slides */
+  hasSlides?: boolean;
 }
 
 export interface CreateLessonRequest {

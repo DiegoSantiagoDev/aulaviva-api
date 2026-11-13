@@ -17,10 +17,13 @@
     --parchment: #f5efe4;
     --gold: #c9a227;
     --gold-soft: #e6d29a;
+    --gold-deep: #6b5a12;
     --terra: #b5532a;
     --terra-deep: #7a3618;
     --sage: #6b7a5a;
+    --sage-deep: #4b5940;
     --ink-soft: #3a342c;
+    --focus: #7a3618;
   }
 
   * {
@@ -264,10 +267,125 @@
 }
 .slide-fade { animation: slideFade 0.35s ease both; }
 
-/* Focus styles com ouro */
+/* ---------- Sistema de slides ---------- */
+.slide-canvas {
+  container-type: inline-size;
+  container-name: slide;
+}
+
+.slide-layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--ink);
+}
+
+.slide-pad {
+  padding: clamp(0.7rem, 4.2cqw, 3rem);
+}
+
+.slide-title {
+  font-size: clamp(1.05rem, calc(4.1cqw * var(--slide-scale, 1)), 2.7rem);
+  line-height: 1.12;
+}
+
+.slide-title-lg {
+  font-size: clamp(1.35rem, calc(5.4cqw * var(--slide-scale, 1)), 3.8rem);
+}
+
+.slide-subtitle {
+  font-size: clamp(0.78rem, calc(2.2cqw * var(--slide-scale, 1)), 1.35rem);
+}
+
+.slide-body {
+  font-size: clamp(0.72rem, calc(2.05cqw * var(--slide-scale, 1)), 1.15rem);
+}
+
+.slide-quote {
+  font-size: clamp(0.9rem, calc(3.05cqw * var(--slide-scale, 1)), 2rem);
+}
+
+.slide-formula {
+  font-size: clamp(0.85rem, calc(3.15cqw * var(--slide-scale, 1)), 2.15rem);
+  line-height: 1.2;
+}
+
+.slide-label {
+  font-size: clamp(0.55rem, calc(1.25cqw * var(--slide-scale, 1)), 0.8rem);
+}
+
+.slide-meta {
+  font-size: clamp(0.62rem, 1.4cqw, 0.82rem);
+}
+
+.slide-palco-rodape {
+  padding: clamp(0.4rem, 1.5cqw, 0.9rem) clamp(0.65rem, 3cqw, 1.75rem);
+}
+
+/* Slides densos: alinham ao topo e permitem rolagem interna só depois
+   de a tipografia já ter sido reduzida por --slide-scale. */
+.slide-dense {
+  justify-content: flex-start;
+}
+
+.slide-dense .slide-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.slide-scroll {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) transparent;
+}
+
+.slide-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@container slide (min-width: 34rem) {
+  .slide-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Cascata real dos itens (40–60 ms por item, definida no componente). */
+@keyframes slideItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-item {
+  animation: slideItemIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Miniaturas: mesmo layout, mas sem repetir a cascata. */
+.slide-miniatura .slide-item,
+.slide-miniatura .anim-breathe {
+  animation: none !important;
+}
+
+/* Focus styles: terra profundo garante contraste AA sobre pergaminho. */
 *:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+.ink-btn:focus-visible,
+.bg-ink:focus-visible {
+  outline-color: var(--gold-soft);
 }
 
 /* Modo Leve para dispositivos modestos */
@@ -280,6 +398,13 @@
   display: none !important;
 }
 
+/* Animações pausadas quando a aba está oculta. */
+.aba-oculta *,
+.aba-oculta *::before,
+.aba-oculta *::after {
+  animation-play-state: paused !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -290,22 +415,85 @@
 }
 
 /* ---------- Regras para Impressão (Slides e Resumo) ---------- */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
 @media print {
+  html,
   body {
     background: #ffffff !important;
     color: #000000 !important;
   }
-  nav, footer, .no-print, [role="tablist"] {
+
+  nav,
+  footer,
+  .no-print,
+  [role="tablist"] {
     display: none !important;
   }
+
+  /* Impressão dos slides: um slide por página, sem duplicar o palco ativo. */
+  .deck-impressao {
+    display: block !important;
+  }
+
   .slide-container-print {
-    page-break-after: always;
-    page-break-inside: avoid;
-    break-after: page;
+    display: flex;
+    flex-direction: column;
     width: 100% !important;
-    height: 100vh !important;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #ffffff !important;
     border: 1px solid #c9a227 !important;
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .slide-container-print:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .slide-print-header,
+  .slide-print-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8pt;
+    padding: 3pt 8pt;
+    color: #3a342c;
+    font-size: 8pt;
+  }
+
+  .slide-print-header {
+    border-bottom: 1px solid #e6d29a;
+  }
+
+  .slide-print-footer {
+    border-top: 1px solid #e6d29a;
+    justify-content: center;
+  }
+
+  .slide-print-conteudo {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .slide-container-print .slide-layout {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* No papel, o conteúdo denso pode rolar? Não: garante que a redução
+     tipográfica feita pelo componente seja suficiente. */
+  .slide-container-print .slide-scroll {
+    overflow: hidden;
   }
 }
