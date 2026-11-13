@@ -11,11 +11,13 @@ export default function AbaFotos({ imagens, tituloAula }: AbaFotosProps) {
   const [indiceSelecionado, setIndiceSelecionado] = useState<number | null>(null);
   const [imagensComFalha, setImagensComFalha] = useState<Set<number>>(new Set());
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const fecharRef = useRef<HTMLButtonElement | null>(null);
 
   const abrirVisualizador = (index: number) => {
     setIndiceSelecionado(index);
     if (dialogRef.current && !dialogRef.current.open) {
       dialogRef.current.showModal();
+      requestAnimationFrame(() => fecharRef.current?.focus());
     }
   };
 
@@ -43,22 +45,28 @@ export default function AbaFotos({ imagens, tituloAula }: AbaFotosProps) {
   };
 
   useEffect(() => {
+    if (indiceSelecionado === null) return;
+
     const tratarTeclado = (e: KeyboardEvent) => {
-      if (indiceSelecionado === null) return;
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        navegarAnterior();
+        setIndiceSelecionado((prev) =>
+          prev === null ? null : prev > 0 ? prev - 1 : imagens.length - 1
+        );
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
-        navegarProximo();
+        setIndiceSelecionado((prev) =>
+          prev === null ? null : prev < imagens.length - 1 ? prev + 1 : 0
+        );
       } else if (e.key === 'Escape') {
-        fecharVisualizador();
+        if (dialogRef.current?.open) dialogRef.current.close();
+        setIndiceSelecionado(null);
       }
     };
 
     window.addEventListener('keydown', tratarTeclado);
     return () => window.removeEventListener('keydown', tratarTeclado);
-  });
+  }, [indiceSelecionado, imagens.length]);
 
   if (imagens.length === 0) {
     return (
@@ -95,9 +103,26 @@ export default function AbaFotos({ imagens, tituloAula }: AbaFotosProps) {
           return (
             <div
               key={img.id}
+              role={falhou ? undefined : 'button'}
+              tabIndex={falhou ? undefined : 0}
+              aria-label={
+                falhou
+                  ? `Imagem ${i + 1} indisponível`
+                  : `Ampliar foto ${i + 1}: ${img.originalName}`
+              }
+              aria-disabled={falhou || undefined}
               onClick={() => !falhou && abrirVisualizador(i)}
+              onKeyDown={(e) => {
+                if (falhou) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  abrirVisualizador(i);
+                }
+              }}
               className={`art-frame rounded-2xl overflow-hidden border border-gold/30 transition-all duration-300 group ${
-                falhou ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-1 hover:shadow-xl'
+                falhou
+                  ? 'opacity-70 cursor-not-allowed'
+                  : 'cursor-pointer hover:-translate-y-1 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-terra-deep'
               }`}
             >
               <div className="aspect-[4/3] bg-ink/5 relative flex items-center justify-center overflow-hidden">
@@ -139,6 +164,7 @@ export default function AbaFotos({ imagens, tituloAula }: AbaFotosProps) {
       <dialog
         ref={dialogRef}
         onClose={fecharVisualizador}
+        aria-label="Visualizador de fotos do quadro"
         className="backdrop:bg-ink/85 backdrop:backdrop-blur-sm p-0 rounded-2xl bg-parchment border border-gold/40 shadow-2xl max-w-4xl w-[92vw] overflow-hidden focus:outline-none"
       >
         {imagemAtual && (
@@ -154,6 +180,7 @@ export default function AbaFotos({ imagens, tituloAula }: AbaFotosProps) {
                 </span>
               </div>
               <button
+                ref={fecharRef}
                 onClick={fecharVisualizador}
                 className="p-1.5 rounded-full hover:bg-gold/20 text-ink transition-colors"
                 aria-label="Fechar visualizador"

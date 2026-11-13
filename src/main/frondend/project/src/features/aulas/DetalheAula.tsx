@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef, type KeyboardEvent as EventoTecladoReact } from 'react';
 import { api } from '../../api/cliente';
 import { LessonResponse } from '../../api/tipos';
 import { useRoteador } from '../../app/Roteador';
@@ -22,7 +22,18 @@ interface DetalheAulaProps {
   id: string;
 }
 
-type TipoAba = 'resumo' | 'slides' | 'fotos' | 'video';
+const ABAS = [
+  { id: 'resumo', rotulo: 'Resumo', Icone: BookOpen },
+  { id: 'slides', rotulo: 'Slides', Icone: Presentation },
+  { id: 'fotos', rotulo: 'Fotos do Quadro', Icone: ImageIcon },
+  { id: 'video', rotulo: 'Vídeo (NotebookLM)', Icone: Video },
+] as const;
+
+type TipoAba = (typeof ABAS)[number]['id'];
+
+function ehAbaValida(valor: string | null): valor is TipoAba {
+  return ABAS.some((aba) => aba.id === valor);
+}
 
 function formatarData(dataIso: string): string {
   try {
@@ -42,11 +53,37 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
   const [erro, setErro] = useState<string | null>(null);
   const [statusHttp, setStatusHttp] = useState<number>(200);
 
-  // Aba ativa sincronizada com query param ?aba=
-  const abaAtiva: TipoAba = (searchParams.get('aba') as TipoAba) || 'resumo';
+  // Aba ativa sincronizada com query param ?aba= (valor inválido cai em resumo)
+  const abaParam = searchParams.get('aba');
+  const abaAtiva: TipoAba = ehAbaValida(abaParam) ? abaParam : 'resumo';
+
+  const abaRefs = useRef<Partial<Record<TipoAba, HTMLButtonElement | null>>>({});
 
   const mudarAba = (novaAba: TipoAba) => {
     navegar(`/aulas/${id}?aba=${novaAba}`);
+  };
+
+  const indiceAbaAtiva = ABAS.findIndex((aba) => aba.id === abaAtiva);
+
+  const aoTeclarAba = (e: EventoTecladoReact<HTMLDivElement>) => {
+    let novoIndice = indiceAbaAtiva;
+
+    if (e.key === 'ArrowRight') {
+      novoIndice = (indiceAbaAtiva + 1) % ABAS.length;
+    } else if (e.key === 'ArrowLeft') {
+      novoIndice = (indiceAbaAtiva - 1 + ABAS.length) % ABAS.length;
+    } else if (e.key === 'Home') {
+      novoIndice = 0;
+    } else if (e.key === 'End') {
+      novoIndice = ABAS.length - 1;
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+    const destino = ABAS[novoIndice];
+    mudarAba(destino.id);
+    abaRefs.current[destino.id]?.focus();
   };
 
   const buscarAula = useCallback(
@@ -224,69 +261,54 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
         </div>
       </header>
 
-      {/* Barra de Abas (com role="tablist", aria-selected e teclado) */}
-      <div className="border-b border-gold/25 no-print" role="tablist" aria-label="Conteúdos da aula">
+      {/* Barra de Abas (WAI-ARIA: tablist, aria-selected, roving tabindex e setas) */}
+      <div
+        className="border-b border-gold/25 no-print"
+        role="tablist"
+        aria-label="Conteúdos da aula"
+        onKeyDown={aoTeclarAba}
+      >
         <div className="flex gap-2 sm:gap-4 overflow-x-auto pb-px">
-          <button
-            role="tab"
-            aria-selected={abaAtiva === 'resumo'}
-            onClick={() => mudarAba('resumo')}
-            className={`flex items-center gap-2 py-3 px-4 border-b-2 font-display text-base sm:text-lg font-bold transition-all whitespace-nowrap cursor-pointer ${
-              abaAtiva === 'resumo'
-                ? 'border-gold text-ink bg-gold/10 rounded-t-xl'
-                : 'border-transparent text-ink-soft hover:text-ink hover:border-gold/30'
-            }`}
-          >
-            <BookOpen className="w-4 h-4 text-gold" />
-            <span>Resumo</span>
-          </button>
+          {ABAS.map((aba) => {
+            const ativa = abaAtiva === aba.id;
+            const rotulo =
+              aba.id === 'fotos' ? `Fotos do Quadro (${aula.images.length})` : aba.rotulo;
 
-          <button
-            role="tab"
-            aria-selected={abaAtiva === 'slides'}
-            onClick={() => mudarAba('slides')}
-            className={`flex items-center gap-2 py-3 px-4 border-b-2 font-display text-base sm:text-lg font-bold transition-all whitespace-nowrap cursor-pointer ${
-              abaAtiva === 'slides'
-                ? 'border-gold text-ink bg-gold/10 rounded-t-xl'
-                : 'border-transparent text-ink-soft hover:text-ink hover:border-gold/30'
-            }`}
-          >
-            <Presentation className="w-4 h-4 text-gold" />
-            <span>Slides</span>
-          </button>
-
-          <button
-            role="tab"
-            aria-selected={abaAtiva === 'fotos'}
-            onClick={() => mudarAba('fotos')}
-            className={`flex items-center gap-2 py-3 px-4 border-b-2 font-display text-base sm:text-lg font-bold transition-all whitespace-nowrap cursor-pointer ${
-              abaAtiva === 'fotos'
-                ? 'border-gold text-ink bg-gold/10 rounded-t-xl'
-                : 'border-transparent text-ink-soft hover:text-ink hover:border-gold/30'
-            }`}
-          >
-            <ImageIcon className="w-4 h-4 text-gold" />
-            <span>Fotos do Quadro ({aula.images.length})</span>
-          </button>
-
-          <button
-            role="tab"
-            aria-selected={abaAtiva === 'video'}
-            onClick={() => mudarAba('video')}
-            className={`flex items-center gap-2 py-3 px-4 border-b-2 font-display text-base sm:text-lg font-bold transition-all whitespace-nowrap cursor-pointer ${
-              abaAtiva === 'video'
-                ? 'border-gold text-ink bg-gold/10 rounded-t-xl'
-                : 'border-transparent text-ink-soft hover:text-ink hover:border-gold/30'
-            }`}
-          >
-            <Video className="w-4 h-4 text-terra" />
-            <span>Vídeo (NotebookLM)</span>
-          </button>
+            return (
+              <button
+                key={aba.id}
+                ref={(el) => {
+                  abaRefs.current[aba.id] = el;
+                }}
+                id={`aba-${aba.id}`}
+                type="button"
+                role="tab"
+                aria-selected={ativa}
+                aria-controls={`painel-${aba.id}`}
+                tabIndex={ativa ? 0 : -1}
+                onClick={() => mudarAba(aba.id)}
+                className={`flex items-center gap-2 py-3 px-4 border-b-2 font-display text-base sm:text-lg font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  ativa
+                    ? 'border-gold text-ink bg-gold/10 rounded-t-xl'
+                    : 'border-transparent text-ink-soft hover:text-ink hover:border-gold/30'
+                }`}
+              >
+                <aba.Icone className="w-4 h-4 text-gold" aria-hidden="true" />
+                <span>{rotulo}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Conteúdo da Aba Selecionada */}
-      <main className="min-h-[400px]">
+      <section
+        className="min-h-[400px] focus-visible:outline-none"
+        role="tabpanel"
+        id={`painel-${abaAtiva}`}
+        aria-labelledby={`aba-${abaAtiva}`}
+        tabIndex={0}
+      >
         {abaAtiva === 'resumo' && (
           <AbaResumo resumoBruto={aula.summary} tituloAula={aula.title} />
         )}
@@ -311,7 +333,7 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
             </p>
           </div>
         )}
-      </main>
+      </section>
     </div>
   );
 }

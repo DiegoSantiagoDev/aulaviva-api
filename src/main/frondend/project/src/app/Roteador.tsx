@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 interface RoteadorContextType {
   rota: string;
@@ -34,10 +34,18 @@ export function RoteadorProvider({ children }: { children: React.ReactNode }) {
       : { rota: '/', searchParams: new URLSearchParams() }
   );
 
+  // Só move o foco/rolagem quando o caminho muda. Trocar apenas a query
+  // (por exemplo ?aba=slides) não deve roubar o foco das abas.
+  const rotaAnteriorRef = useRef(estadoRota.rota);
+
   useEffect(() => {
     const aoMudarHash = () => {
       const parsed = parseHash(window.location.hash);
+      const mudouRota = rotaAnteriorRef.current !== parsed.rota;
+      rotaAnteriorRef.current = parsed.rota;
       setEstadoRota(parsed);
+
+      if (!mudouRota) return;
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
       requestAnimationFrame(() => {
