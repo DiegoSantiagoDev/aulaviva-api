@@ -1,14 +1,24 @@
-import { Camera, Cpu, MonitorPlay } from 'lucide-react';
-import ArtFigure from './ArtFigure.tsx';
+import { Camera, Cpu, MonitorPlay, LucideIcon } from 'lucide-react';
+import ArtFigure, { Pose } from './ArtFigure.tsx';
 import { useReveal } from '../hooks/useReveal.ts';
 
-const stages = [
+interface StageData {
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  desc: string;
+  pose: Pose;
+  artRef: string;
+  color: 'terra' | 'gold' | 'sage';
+}
+
+const stages: StageData[] = [
   {
     icon: Camera,
     title: '1. Captura',
     subtitle: 'Durante a aula',
-    desc: 'O ESP32 com microfone INMP441 capta o áudio da sala pela interface I2S. O professor fotografa o quadro, slides e exercícios pelo celular e envia à plataforma.',
-    pose: 'discobolus' as const,
+    desc: 'O áudio da aula é captado e o professor fotografa o quadro e os esquemas explicativos pelo celular, enviando diretamente à plataforma com compressão inteligente.',
+    pose: 'discobolus',
     artRef: 'Míron · Discóbolo',
     color: 'terra',
   },
@@ -16,23 +26,23 @@ const stages = [
     icon: Cpu,
     title: '2. Processamento',
     subtitle: 'No servidor',
-    desc: 'O backend em Spring Boot recebe os arquivos, registra os metadados e aciona a IA: transcrição do áudio, análise do conteúdo e geração de resumos, questões e exercícios.',
-    pose: 'scribe' as const,
+    desc: 'O backend em Spring Boot recebe os arquivos e aciona os modelos de IA: transcrição da fala (Whisper) e geração em chamada única de resumos didáticos e apresentações de slides (Qwen via Groq).',
+    pose: 'scribe',
     artRef: 'São Jerônimo · O escriba',
     color: 'gold',
   },
   {
     icon: MonitorPlay,
     title: '3. Plataforma',
-    subtitle: 'Para alunos e professores',
-    desc: 'Cada aula vira materiais organizados por turma, disciplina e data. O aluno consulta no seu ritmo; o professor revisa e valida antes de publicar.',
-    pose: 'scholar' as const,
+    subtitle: 'Para os estudantes',
+    desc: 'Cada aula vira um conjunto didático completo: resumo estruturado em tópicos, slides com design editorial, galeria de fotos do quadro e guia passo a passo para gerar vídeo no Google NotebookLM.',
+    pose: 'scholar',
     artRef: 'Vermeer · A leitora',
     color: 'sage',
   },
 ];
 
-function Stage({ s, i }: { s: (typeof stages)[number]; i: number }) {
+function Stage({ s, i }: { s: StageData; i: number }) {
   const { ref, inView } = useReveal(0.25);
   const colorMap: Record<string, string> = {
     terra: 'text-terra bg-terra/10',
@@ -41,21 +51,23 @@ function Stage({ s, i }: { s: (typeof stages)[number]; i: number }) {
   };
   return (
     <div ref={ref as never} className={`reveal ${inView ? 'in-view' : ''} relative`}>
-      <div className="art-frame rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
-        <div className="flex items-start justify-between">
-          <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${colorMap[s.color]}`}>
-            <s.icon className="w-7 h-7" />
+      <div className="art-frame rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl h-full flex flex-col justify-between">
+        <div>
+          <div className="flex items-start justify-between">
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${colorMap[s.color]}`}>
+              <s.icon className="w-7 h-7" />
+            </div>
+            <span className="font-display text-6xl text-gold/25 font-bold">{i + 1}</span>
           </div>
-          <span className="font-display text-6xl text-gold/25">{i + 1}</span>
+          <h3 className="font-display text-3xl font-semibold mt-4 text-ink">{s.title}</h3>
+          <p className="text-sm tracking-widest2 uppercase text-ink-soft mt-1">{s.subtitle}</p>
+          <p className="mt-4 text-ink-soft leading-relaxed text-sm">{s.desc}</p>
         </div>
-        <h3 className="font-display text-3xl font-semibold mt-4 text-ink">{s.title}</h3>
-        <p className="text-sm tracking-widest2 uppercase text-ink-soft mt-1">{s.subtitle}</p>
-        <p className="mt-4 text-ink-soft leading-relaxed">{s.desc}</p>
-        <div className="mt-6 flex items-center gap-4">
-          <div className="w-20 h-20 flex-shrink-0">
+        <div className="mt-6 pt-4 border-t border-gold/15 flex items-center gap-4">
+          <div className="w-16 h-16 flex-shrink-0">
             <ArtFigure pose={s.pose} inView={inView} className="w-full h-full" />
           </div>
-          <span className="text-xs tracking-widest2 uppercase text-gold/70">{s.artRef}</span>
+          <span className="text-xs tracking-widest2 uppercase text-gold/80 font-medium">{s.artRef}</span>
         </div>
       </div>
       {i < stages.length - 1 && (
@@ -73,13 +85,13 @@ export default function HowItWorks() {
     <section id="funcionamento" className="relative py-24 px-6 paper-grain">
       <div className="max-w-6xl mx-auto">
         <div ref={ref} className={`text-center mb-16 reveal ${inView ? 'in-view' : ''}`}>
-          <span className="text-xs tracking-widest2 uppercase text-gold">O funcionamento</span>
+          <span className="text-xs tracking-widest2 uppercase text-gold font-semibold">O funcionamento</span>
           <h2 className="font-display text-5xl md:text-6xl font-bold mt-3 text-ink">
             Da sala de aula à tela
           </h2>
-          <p className="mt-4 text-ink-soft max-w-2xl mx-auto">
-            Em três etapas, o conteúdo vivo da aula é transformado em materiais de estudo
-            que ficam disponíveis para consulta quando e onde o aluno precisar.
+          <p className="mt-4 text-ink-soft max-w-2xl mx-auto text-base">
+            Em três etapas simples, o conteúdo vivo da aula é transformado em materiais de estudo
+            estruturados que ficam disponíveis para consulta quando e onde o estudante precisar.
           </p>
           <div className="h-px gold-line w-32 mx-auto mt-8" />
         </div>

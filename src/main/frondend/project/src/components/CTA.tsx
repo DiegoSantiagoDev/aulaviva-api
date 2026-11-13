@@ -1,43 +1,46 @@
 import ArtFigure from './ArtFigure.tsx';
 import { useReveal } from '../hooks/useReveal.ts';
+import { useRoteador } from '../app/Roteador';
+import { ArrowRight } from 'lucide-react';
 
 export default function CTA() {
-  const { ref, inView } = useReveal(0.25);
-  return (
-    <section className="relative py-32 px-6 overflow-hidden bg-terra-deep text-parchment">
-      <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 70% 30%, rgba(201,162,39,0.4), transparent 60%)' }} />
-      <div className="absolute top-10 right-10 w-40 h-40 rounded-full border border-gold/20 anim-rotate-slow" />
-      <div className="absolute bottom-10 left-10 w-24 h-24 rounded-full border border-gold/15 anim-rotate-slow" style={{ animationDirection: 'reverse' }} />
+  const { ref, inView } = useReveal(0.2);
+  const { navegar } = useRoteador();
 
-      <div ref={ref} className={`relative max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center reveal ${inView ? 'in-view' : ''}`}>
-        <div>
-          <span className="text-xs tracking-widest2 uppercase text-gold-soft">O resultado esperado</span>
-          <h2 className="font-display text-5xl md:text-6xl font-bold mt-3 leading-tight">
-            Mais aprendizagem para todos
-          </h2>
-          <p className="mt-4 font-display text-2xl italic text-gold-soft">
-            "Nenhuma aula precisa ser perdida."
-          </p>
-          <p className="mt-6 text-parchment/80 max-w-md">
-            Para os alunos, uma forma mais acessível de recuperar explicações e praticar.
-            Para os professores, facilitação na disponibilização de materiais.
-            Para a escola, apoio à recuperação da aprendizagem.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <button className="px-8 py-3.5 rounded-full bg-gold text-ink font-medium tracking-wide hover:bg-gold-soft transition-all duration-300 hover:-translate-y-1">
-              Acompanhar o projeto
-            </button>
-            <button className="px-8 py-3.5 rounded-full border border-parchment/40 text-parchment hover:bg-parchment/10 transition-all duration-300 font-medium tracking-wide">
-              Falar com a equipe
-            </button>
+  return (
+    <section className="py-28 px-6 bg-parchment relative overflow-hidden paper-grain">
+      <div className="max-w-4xl mx-auto text-center relative z-10">
+        <div ref={ref} className={`reveal ${inView ? 'in-view' : ''}`}>
+          <div className="w-32 h-32 mx-auto mb-6">
+            <ArtFigure pose="nike" inView={inView} className="w-32 h-32" />
           </div>
-        </div>
-        <div className="flex justify-center anim-float">
-          <div className="rounded-2xl p-8" style={{ background: 'rgba(245,239,228,0.08)', boxShadow: 'inset 0 0 0 1px rgba(201,162,39,0.3)' }}>
-            <ArtFigure pose="nike" inView={inView} className="w-64 h-64 md:w-72 md:h-72 [&_line]:stroke-parchment [&_circle]:stroke-parchment [&_path]:stroke-parchment" />
-            <div className="text-center mt-2 text-[10px] tracking-widest2 uppercase text-gold-soft">
-              Vitória de Samotrácia
-            </div>
+          <span className="text-xs tracking-widest2 uppercase text-gold font-semibold">
+            Demonstração Aberta
+          </span>
+          <h2 className="font-display text-4xl sm:text-6xl font-bold mt-3 text-ink leading-tight">
+            Pronto para ver as aulas <br />
+            <span className="shimmer-text">ganharem vida?</span>
+          </h2>
+          <p className="mt-5 text-ink-soft text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+            Experimente a plataforma agora mesmo. Acesse a biblioteca de aulas como aluno ou explore o painel do professor.
+          </p>
+          <div className="mt-9 flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button
+              onClick={() => navegar('/entrar')}
+              className="ink-btn px-8 py-4 rounded-full text-base font-semibold inline-flex items-center gap-2 group w-full sm:w-auto justify-center"
+            >
+              <span>Acessar a Plataforma</span>
+              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button
+              onClick={() => {
+                const el = document.getElementById('funcionamento');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="gold-outline-btn px-8 py-4 rounded-full text-base font-semibold w-full sm:w-auto"
+            >
+              Entenda como funciona
+            </button>
           </div>
         </div>
       </div>

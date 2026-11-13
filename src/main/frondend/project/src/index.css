@@ -1,4 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+/* Fontes locais importadas via pacotes @fontsource para operação 100% offline */
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/cormorant-garamond/700.css';
+@import '@fontsource/manrope/400.css';
+@import '@fontsource/manrope/500.css';
+@import '@fontsource/manrope/600.css';
+@import '@fontsource/manrope/700.css';
 
 @tailwind base;
 @tailwind components;
@@ -10,10 +17,13 @@
     --parchment: #f5efe4;
     --gold: #c9a227;
     --gold-soft: #e6d29a;
+    --gold-deep: #6b5a12;
     --terra: #b5532a;
     --terra-deep: #7a3618;
     --sage: #6b7a5a;
+    --sage-deep: #4b5940;
     --ink-soft: #3a342c;
+    --focus: #7a3618;
   }
 
   * {
@@ -60,6 +70,38 @@
     transform: translateY(-2px);
     box-shadow: 0 12px 30px -10px rgba(122, 54, 24, 0.6);
   }
+
+  .ink-btn:active {
+    transform: translateY(0);
+  }
+
+  .gold-outline-btn {
+    border: 1px solid var(--gold);
+    color: var(--ink);
+    background: transparent;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .gold-outline-btn:hover {
+    background: rgba(201, 162, 39, 0.12);
+    border-color: var(--gold);
+    transform: translateY(-1px);
+  }
+
+  /* Paper texture overlay */
+  .paper-grain {
+    position: relative;
+  }
+  .paper-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image:
+      radial-gradient(circle at 25% 30%, #000 1px, transparent 1px),
+      radial-gradient(circle at 75% 70%, #000 1px, transparent 1px);
+    background-size: 4px 4px, 6px 6px;
+  }
 }
 
 /* ---------- Keyframe library ---------- */
@@ -91,15 +133,15 @@
   100% { background-position: 200% center; }
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(40px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeRight {
-  from { opacity: 0; transform: translateX(-40px); }
+  from { opacity: 0; transform: translateX(-30px); }
   to { opacity: 1; transform: translateX(0); }
 }
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
+  from { opacity: 0; transform: scale(0.94); }
   to { opacity: 1; transform: scale(1); }
 }
 @keyframes inkRipple {
@@ -110,17 +152,21 @@
   0%, 100% { transform: rotate(-4deg); }
   50% { transform: rotate(6deg); }
 }
-@keyframes countUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 @keyframes marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(35px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-35px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes drawCircle {
+  0% { stroke-dasharray: 200; stroke-dashoffset: 200; }
+  100% { stroke-dashoffset: 0; }
 }
 
 /* ---------- Utility animation classes ---------- */
@@ -131,12 +177,15 @@
 .anim-leaf-sway { animation: leafSway 4s ease-in-out infinite; transform-origin: bottom center; }
 .anim-marquee { animation: marquee 40s linear infinite; }
 
-.anim-fade-up { animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-fade-right { animation: fadeRight 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-scale-in { animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-fade-up { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-fade-right { animation: fadeRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-scale-in { animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+.delay-50 { animation-delay: 0.05s; }
 .delay-100 { animation-delay: 0.1s; }
+.delay-150 { animation-delay: 0.15s; }
 .delay-200 { animation-delay: 0.2s; }
+.delay-250 { animation-delay: 0.25s; }
 .delay-300 { animation-delay: 0.3s; }
 .delay-400 { animation-delay: 0.4s; }
 .delay-500 { animation-delay: 0.5s; }
@@ -162,14 +211,14 @@
   stroke-dashoffset: 1200;
 }
 .draw-path.in-view {
-  animation: dashDraw 2.5s ease-out forwards;
+  animation: dashDraw 2.2s ease-out forwards;
 }
 
 /* Reveal on scroll */
 .reveal {
   opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .reveal.in-view {
   opacity: 1;
@@ -178,31 +227,30 @@
 
 .reveal-scale {
   opacity: 0;
-  transform: scale(0.92);
-  transition: opacity 1s ease, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.94);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .reveal-scale.in-view {
   opacity: 1;
   transform: scale(1);
 }
 
-/* Paper texture overlay */
-.paper-grain {
-  position: relative;
+/* Slide transitions */
+.slide-forward {
+  animation: slideInRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.paper-grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image:
-    radial-gradient(circle at 25% 30%, #000 1px, transparent 1px),
-    radial-gradient(circle at 75% 70%, #000 1px, transparent 1px);
-  background-size: 4px 4px, 6px 6px;
+.slide-backward {
+  animation: slideInLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ---------- Audio waveform ---------- */
+/* Annotation marks */
+.draw-annotation {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: dashDraw 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+}
+
+/* Audio waveform */
 @keyframes waveBar {
   0%, 100% { transform: scaleY(0.25); }
   50% { transform: scaleY(1); }
@@ -212,58 +260,246 @@
   animation: waveBar 1.2s ease-in-out infinite;
 }
 
-/* ---------- Flow particle ---------- */
-@keyframes flowDot {
-  0% { offset-distance: 0%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { offset-distance: 100%; opacity: 0; }
-}
-
-/* ---------- Typing cursor ---------- */
-@keyframes blinkCursor {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-.type-cursor::after {
-  content: "|";
-  animation: blinkCursor 1s step-end infinite;
-  color: var(--gold);
-  margin-left: 2px;
-}
-
-/* ---------- Slide reveal for tabs ---------- */
+/* Slide reveal for tabs */
 @keyframes slideFade {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.slide-fade { animation: slideFade 0.5s ease both; }
+.slide-fade { animation: slideFade 0.35s ease both; }
 
-/* ---------- Ring pulse for capture ---------- */
-@keyframes ringPulse {
-  0% { transform: scale(0.8); opacity: 0.8; }
-  100% { transform: scale(2.2); opacity: 0; }
-}
-.ring-pulse { animation: ringPulse 2.5s ease-out infinite; }
-
-/* ---------- Progress fill ---------- */
-@keyframes fillBar {
-  from { width: 0%; }
-  to { width: var(--target-width, 100%); }
+/* ---------- Sistema de slides ---------- */
+.slide-canvas {
+  container-type: inline-size;
+  container-name: slide;
 }
 
-/* ---------- Timeline node ---------- */
-@keyframes nodePop {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+.slide-layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--ink);
 }
-.node-pop { animation: nodePop 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+
+.slide-pad {
+  padding: clamp(0.7rem, 4.2cqw, 3rem);
+}
+
+.slide-title {
+  font-size: clamp(1.05rem, calc(4.1cqw * var(--slide-scale, 1)), 2.7rem);
+  line-height: 1.12;
+}
+
+.slide-title-lg {
+  font-size: clamp(1.35rem, calc(5.4cqw * var(--slide-scale, 1)), 3.8rem);
+}
+
+.slide-subtitle {
+  font-size: clamp(0.78rem, calc(2.2cqw * var(--slide-scale, 1)), 1.35rem);
+}
+
+.slide-body {
+  font-size: clamp(0.72rem, calc(2.05cqw * var(--slide-scale, 1)), 1.15rem);
+}
+
+.slide-quote {
+  font-size: clamp(0.9rem, calc(3.05cqw * var(--slide-scale, 1)), 2rem);
+}
+
+.slide-formula {
+  font-size: clamp(0.85rem, calc(3.15cqw * var(--slide-scale, 1)), 2.15rem);
+  line-height: 1.2;
+}
+
+.slide-label {
+  font-size: clamp(0.55rem, calc(1.25cqw * var(--slide-scale, 1)), 0.8rem);
+}
+
+.slide-meta {
+  font-size: clamp(0.62rem, 1.4cqw, 0.82rem);
+}
+
+.slide-palco-rodape {
+  padding: clamp(0.4rem, 1.5cqw, 0.9rem) clamp(0.65rem, 3cqw, 1.75rem);
+}
+
+/* Slides densos: alinham ao topo e permitem rolagem interna só depois
+   de a tipografia já ter sido reduzida por --slide-scale. */
+.slide-dense {
+  justify-content: flex-start;
+}
+
+.slide-dense .slide-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.slide-scroll {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) transparent;
+}
+
+.slide-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@container slide (min-width: 34rem) {
+  .slide-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Cascata real dos itens (40–60 ms por item, definida no componente). */
+@keyframes slideItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-item {
+  animation: slideItemIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Miniaturas: mesmo layout, mas sem repetir a cascata. */
+.slide-miniatura .slide-item,
+.slide-miniatura .anim-breathe {
+  animation: none !important;
+}
+
+/* Focus styles: terra profundo garante contraste AA sobre pergaminho. */
+*:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.ink-btn:focus-visible,
+.bg-ink:focus-visible {
+  outline-color: var(--gold-soft);
+}
+
+/* Modo Leve para dispositivos modestos */
+.modo-leve * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.1s !important;
+}
+.modo-leve .paper-grain::after {
+  display: none !important;
+}
+
+/* Animações pausadas quando a aba está oculta. */
+.aba-oculta *,
+.aba-oculta *::before,
+.aba-oculta *::after {
+  animation-play-state: paused !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Regras para Impressão (Slides e Resumo) ---------- */
+/* Apenas o deck de slides usa paisagem. O resumo continua no padrão
+   retrato do navegador, preservando a leitura em folha A4 vertical. */
+.deck-impressao {
+  page: slides-aulaviva;
+}
+
+@page slides-aulaviva {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  nav,
+  footer,
+  .no-print,
+  [role="tablist"] {
+    display: none !important;
+  }
+
+  /* Impressão dos slides: um slide por página, sem duplicar o palco ativo. */
+  .deck-impressao {
+    display: block !important;
+  }
+
+  .slide-container-print {
+    display: flex;
+    flex-direction: column;
+    width: 100% !important;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #ffffff !important;
+    border: 1px solid #c9a227 !important;
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .slide-container-print:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .slide-print-header,
+  .slide-print-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8pt;
+    padding: 3pt 8pt;
+    color: #3a342c;
+    font-size: 8pt;
+  }
+
+  .slide-print-header {
+    border-bottom: 1px solid #e6d29a;
+  }
+
+  .slide-print-footer {
+    border-top: 1px solid #e6d29a;
+    justify-content: center;
+  }
+
+  .slide-print-conteudo {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .slide-container-print .slide-layout {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* No papel, o conteúdo denso pode rolar? Não: garante que a redução
+     tipográfica feita pelo componente seja suficiente. */
+  .slide-container-print .slide-scroll {
+    overflow: hidden;
   }
 }

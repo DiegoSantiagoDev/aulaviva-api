@@ -1,8 +1,14 @@
-import { Camera, CheckCircle2, Clock, Upload } from 'lucide-react';
+import { Camera, CheckCircle2, Clock, Upload, LucideIcon } from 'lucide-react';
 import ArtFigure from './ArtFigure.tsx';
 import { useReveal } from '../hooks/useReveal.ts';
 
-const steps = [
+interface Step {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}
+
+const steps: Step[] = [
   {
     icon: Camera,
     title: 'Fotografe o quadro',
@@ -16,21 +22,42 @@ const steps = [
   {
     icon: CheckCircle2,
     title: 'Revise os materiais',
-    desc: 'Veja os resumos e questões gerados pela IA. Aprove, ajuste ou rejeite antes de publicar.',
+    desc: 'Veja os resumos e slides gerados pela IA. Aprove, ajuste ou reprocesse antes de publicar.',
   },
 ];
 
 const reviewItems = [
   { type: 'Resumo', status: 'Aprovado', text: 'Resumo: Equação do 2º grau' },
-  { type: 'Questão', status: 'Revisar', text: 'Calcule as raízes de x² - 5x + 6 = 0' },
-  { type: 'Questão', status: 'Aprovado', text: 'Explique o discriminante Δ.' },
-  { type: 'Exercício', status: 'Revisar', text: '5 exercícios propostos' },
+  { type: 'Slides', status: 'Aprovado', text: 'Apresentação com 8 slides didáticos' },
+  { type: 'Vídeo', status: 'Revisar', text: 'Guia do NotebookLM para os alunos' },
 ];
 
 const statusColor: Record<string, string> = {
   Aprovado: 'bg-sage/20 text-sage',
-  Revisar: 'bg-gold/20 text-terra-deep',
+  Revisar: 'bg-gold/20 text-gold-soft',
 };
+
+function StepItem({ s, i, total }: { s: Step; i: number; total: number }) {
+  const { ref, inView } = useReveal(0.3);
+  return (
+    <div
+      ref={ref as never}
+      className={`reveal ${inView ? 'in-view' : ''} flex gap-5 items-start`}
+      style={{ transitionDelay: `${i * 120}ms` }}
+    >
+      <div className="flex flex-col items-center">
+        <div className="w-12 h-12 rounded-xl bg-gold/15 flex items-center justify-center text-gold-soft">
+          <s.icon className="w-6 h-6" />
+        </div>
+        {i < total - 1 && <div className="w-px h-12 bg-gold/20 mt-2" />}
+      </div>
+      <div className="pt-1">
+        <h3 className="font-display text-2xl font-semibold text-parchment">{s.title}</h3>
+        <p className="text-parchment/70 mt-1 text-sm">{s.desc}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function TeacherArea() {
   const { ref, inView } = useReveal(0.15);
@@ -47,7 +74,7 @@ export default function TeacherArea() {
             O professor no <span className="shimmer-text">centro</span>
           </h2>
           <p className="mt-4 text-parchment/70 max-w-2xl mx-auto">
-            Os professores enviam imagens, acompanham os conteúdos e revisam os materiais
+            Os professores enviam áudios e imagens, acompanham os conteúdos e revisam os materiais
             produzidos pela IA antes que cheguem aos estudantes.
           </p>
         </div>
@@ -55,23 +82,9 @@ export default function TeacherArea() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* steps */}
           <div className="space-y-6">
-            {steps.map((s, i) => {
-              const { ref: r, inView: v } = useReveal(0.3);
-              return (
-                <div ref={r as never} key={s.title} className={`reveal ${v ? 'in-view' : ''} flex gap-5 items-start`} style={{ transitionDelay: `${i * 120}ms` }}>
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-xl bg-gold/15 flex items-center justify-center text-gold-soft">
-                      <s.icon className="w-6 h-6" />
-                    </div>
-                    {i < steps.length - 1 && <div className="w-px h-12 bg-gold/20 mt-2" />}
-                  </div>
-                  <div className="pt-1">
-                    <h3 className="font-display text-2xl font-semibold text-parchment">{s.title}</h3>
-                    <p className="text-parchment/70 mt-1 text-sm">{s.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
+            {steps.map((s, i) => (
+              <StepItem key={s.title} s={s} i={i} total={steps.length} />
+            ))}
           </div>
 
           {/* review panel mockup */}
@@ -79,7 +92,7 @@ export default function TeacherArea() {
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-display text-xl text-parchment">Revisão de materiais</h4>
               <span className="flex items-center gap-1 text-xs text-gold-soft">
-                <Clock className="w-3 h-3" /> Pendentes: 2
+                <Clock className="w-3 h-3" /> Pendentes: 1
               </span>
             </div>
             <div className="space-y-3">
@@ -95,9 +108,12 @@ export default function TeacherArea() {
                 </div>
               ))}
             </div>
-            <button className="w-full mt-5 py-2.5 rounded-full bg-gold text-ink text-sm font-medium hover:bg-gold-soft transition-all duration-300">
-              Publicar aprovados
-            </button>
+            <a
+              href="#/professor"
+              className="block text-center w-full mt-5 py-2.5 rounded-full bg-gold text-ink text-sm font-semibold hover:bg-gold-soft transition-all duration-300 shadow-md"
+            >
+              Acessar painel do professor
+            </a>
           </div>
         </div>
 
@@ -108,7 +124,7 @@ export default function TeacherArea() {
           </div>
           <p className="text-sm text-parchment/60 italic max-w-md">
             No futuro, indicadores agregados podem mostrar quais assuntos apresentam maior
-            dificuldade para a turma — sempre com cuidado, sem avaliar isoladamente.
+            dificuldade para a turma — sempre com cuidado pedagógico e respeito à privacidade.
           </p>
         </div>
       </div>

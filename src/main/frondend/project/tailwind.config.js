@@ -9,9 +9,11 @@ export default {
         parchment: '#f5efe4',
         gold: '#c9a227',
         'gold-soft': '#e6d29a',
+        'gold-deep': '#6b5a12',
         terra: '#b5532a',
         'terra-deep': '#7a3618',
         sage: '#6b7a5a',
+        'sage-deep': '#4b5940',
       },
       fontFamily: {
         display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
