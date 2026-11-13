@@ -415,7 +415,13 @@
 }
 
 /* ---------- Regras para Impressão (Slides e Resumo) ---------- */
-@page {
+/* Apenas o deck de slides usa paisagem. O resumo continua no padrão
+   retrato do navegador, preservando a leitura em folha A4 vertical. */
+.deck-impressao {
+  page: slides-aulaviva;
+}
+
+@page slides-aulaviva {
   size: A4 landscape;
   margin: 8mm;
 }

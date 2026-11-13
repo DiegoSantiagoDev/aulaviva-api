@@ -232,8 +232,8 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
         </button>
       </div>
 
-      {/* Cabeçalho da Aula */}
-      <header className="space-y-4 no-print">
+      {/* Cabeçalho da Aula (oculto só na impressão dos slides, que tem cabeçalho próprio) */}
+      <header className={`space-y-4 ${abaAtiva === 'slides' ? 'no-print' : ''}`}>
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-semibold px-3 py-1 rounded-full bg-gold/15 text-terra-deep uppercase text-xs tracking-wider">
             {aula.subject}
