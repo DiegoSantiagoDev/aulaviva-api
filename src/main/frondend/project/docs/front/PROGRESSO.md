@@ -95,7 +95,7 @@ cd src/main/frondend/project
   ```powershell
   npm.cmd run build
   ```
-  *(Resultado na F5a: 0 erros, 1601 módulos; JS 279,98 kB / 83,02 kB gzip; CSS 79,79 kB / 25,26 kB gzip)*
+  *(Resultado na F5a: 0 erros, 1601 módulos; JS 280,09 kB / 83,06 kB gzip; CSS 79,95 kB / 25,31 kB gzip)*
 * **Teste lógico da derivação/heurística (temporário, fora do repositório):**
   - 8 slides originais geraram 9 derivados; continuação com “parte 2 de 2”; máximo de 6 itens por slide.
   - Guardas contra falso positivo (`exemplar`, `custo + taxa`, `entrada/saída`) e detecção de fórmula real (`f(x) = ax + b`, `a ≠ 0`) aprovadas.
@@ -139,13 +139,14 @@ cd src/main/frondend/project
   - Atualizados `index.css` e `tailwind.config.js`: container queries, tipografia fluida, modo claro/aba oculta, foco acessível e regras `@page`.
   - Removidos fallbacks automáticos de mock em `cliente.ts`; `mock.ts` ganhou slide de 8 itens e `hasImages`.
   - `CartaoAula.tsx` só exibe selos quando `hasSlides`/`hasImages` são explicitamente `true`.
+  - Complemento `eb9f539`: a orientação paisagem foi restrita ao deck de slides via *named page* (`@page slides-aulaviva`), mantendo o resumo em retrato; o cabeçalho da aula só é oculto na impressão da aba Slides.
 * **Resultado dos Comandos:**
   - `typecheck`: Sucesso (0 erros).
   - `lint`: Sucesso (0 erros, 0 avisos).
-  - `build`: Sucesso (1601 módulos; JS 279,98 kB / 83,02 kB gzip; CSS 79,79 kB / 25,26 kB gzip).
+  - `build`: Sucesso (1601 módulos; JS 280,09 kB / 83,06 kB gzip; CSS 79,95 kB / 25,31 kB gzip).
   - Teste lógico da derivação/heurística: todos os casos aprovados.
 * **Limite de validação:** navegador real, dispositivos móveis e geração de PDF **não** foram executados nesta etapa; ficam para a F5b.
-* **Commit:** `40b77e9` — `feat(slides): refina apresentacao 16:9, continuacao e impressao`
+* **Commit:** `40b77e9` — `feat(slides): refina apresentacao 16:9, continuacao e impressao` (complemento de impressão em `eb9f539`)
 
 ---
 
