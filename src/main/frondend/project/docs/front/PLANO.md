@@ -191,6 +191,7 @@ frontend/ (src/main/frondend/project/)
 * **Critério de Pronto:** Resumos didáticos formatados com rigor estético, impressão limpa e galeria de fotos acessível com navegação por teclado.
 
 ### Fase 5: Sistema Dinâmico de Slides
+* **Status:** F5a concluída em 13/11/2026 (commit `40b77e9`); F5b (validação em navegador/dispositivos/PDF) aguarda autorização do dono.
 * **Atividades:**
   1. Criação do visualizador de slides responsivo com proporção fixa 16:9 em container CSS (`aspect-ratio` e tipografia com `clamp()` e `cqw`).
   2. Implementação dos 8 layouts visuais no estilo da identidade:
@@ -205,7 +206,13 @@ frontend/ (src/main/frondend/project/)
   3. Classificador inteligente que detecta o melhor layout quando a API envia apenas `content`.
   4. Controles: teclado (setas, Home, End), swipe touch em dispositivos móveis, tela cheia via Fullscreen API, modo foco e miniaturas de navegação.
   5. Suporte a impressão / exportação para PDF (um slide por página, paisagem).
+* **Decisões da F5a:**
+  - Slides são demonstração apenas com `?mock=1`; a API real, que ainda não possui `presentation`, mostra uma mensagem honesta de indisponibilidade.
+  - Todo fallback automático de mock foi removido do cliente de API.
+  - Apresentações com mais de 6 itens por slide usam continuação derivada (`deckSlides.ts`), preservando o layout original e no máximo 6 itens por tela.
+  - Textos pequenos usam tokens de contraste acessível (`gold-deep`, `sage-deep`, `terra-deep`); o foco visível usa `terra-deep`.
 * **Critério de Pronto:** Apresentação de slides interativa, com animações suaves de transição, legibilidade garantida em telas pequenas e conformidade total com acessibilidade (WCAG AA).
+* **Pendente para a F5b:** validar navegador real, 360 px, teclado/foco, swipe, miniaturas, contraste e PDF; corrigir achados e fechar o relatório da fase.
 
 ### Fase 6: Guia Visual do NotebookLM
 * **Atividades:**
@@ -263,6 +270,10 @@ frontend/ (src/main/frondend/project/)
 3. **Risco: Conteúdo bruto do modelo de IA conter tags de raciocínio (`<think>`) ou formatação corrompida.**
    * *Mitigação:* O analisador de resumo em `src/lib/resumo.ts` possui filtros com regex estritos para expurgar blocos `<think>...</think>`, normalizar quebras de linha e nunca interpretar HTML direto.
 4. **Risco: API retornar slides com layout genérico `content`.**
-   * *Mitigação:* Heurística interna no visualizador de slides que inspeciona o conteúdo textual (detecção de termos como "definição", presenças de símbolos matemáticos ou listas curtas) e escolhe dinamicamente o layout mais nobre visualmente.
-5. **Risco: Execução de scripts npm bloqueada no PowerShell do Windows.**
+   * *Mitigação:* Heurística interna no visualizador de slides que inspeciona o conteúdo textual (detecção de termos como "definição", presenças de símbolos matemáticos ou listas curtas) e escolhe dinamicamente o layout mais nobre visualmente. Sinais usam limites de palavra para evitar falsos positivos e a detecção de fórmula ignora `+` e `/` isolados.
+5. **Risco: Backend real ainda não expor slides e a UI prometer um recurso inexistente.**
+   * *Mitigação:* Nenhum fallback automático de mock. A aba Slides mostra uma mensagem honesta de indisponibilidade quando `presentation` está ausente, e os selos do cartão só aparecem com `hasSlides`/`hasImages` explicitamente verdadeiros. A demonstração completa depende de `?mock=1`.
+6. **Risco: Slides densos extrapolarem o palco ou o PDF.**
+   * *Mitigação:* Slides com mais de 6 itens são divididos em continuações; a tipografia reduz via `--slide-scale` antes de permitir rolagem interna; a impressão usa `DeckImpressao.tsx` com um slide por página em A4 paisagem.
+7. **Risco: Execução de scripts npm bloqueada no PowerShell do Windows.**
    * *Mitigação:* Identificamos que a política de execução bloqueia `npm.ps1`, mas `npm.cmd` executa perfeitamente. Todos os comandos do projeto serão configurados e documentados para uso com `npm.cmd`.
