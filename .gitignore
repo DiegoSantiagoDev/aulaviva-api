@@ -1,46 +1,106 @@
-# Compiled class file
+# =============================================================
+# AulaViva - Monorepositorio
+# =============================================================
+
+# --- Segredos e configuracoes locais (NUNCA versionar) ---
+.env
+.env.*
+!.env.example
+
+**/application-local.properties
+**/application-local.yml
+**/application-local.yaml
+
+# Configuracoes locais com possiveis credenciais
+/config/
+/backend/config/
+
+# Certificados e chaves privadas
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+credentials*.json
+
+# --- Java / Maven ---
+target/
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files
 *.jar
 *.war
-*.nar
 *.ear
+*.nar
+
+hs_err_pid*
+replay_pid*
+dependency-reduced-pom.xml
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# O Maven Wrapper precisa continuar versionado
+!**/.mvn/wrapper/maven-wrapper.jar
+!**/.mvn/wrapper/maven-wrapper.properties
+
+# --- Spring Boot ---
+HELP.md
+.springBeans
+.sts4-cache/
+
+# --- Dados locais do backend ---
+# Banco H2 em arquivo
+/backend/data/
+*.mv.db
+*.trace.db
+*.lock.db
+
+# Uploads locais (audios e imagens)
+/backend/uploads/
+/uploads/
+
+# --- IntelliJ IDEA ---
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# --- VS Code ---
+.vscode/
+*.code-workspace
+
+# --- Eclipse / STS / NetBeans ---
+.classpath
+.project
+.settings/
+.factorypath
+bin/
+nbproject/
+nbbuild/
+nbdist/
+
+# --- Logs e arquivos temporarios ---
+logs/
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# --- Sistema operacional ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Futuro frontend (Node.js) ---
+node_modules/
+frontend/dist/
+frontend/build/
+
+# --- Pacotes compactados ---
 *.zip
 *.tar.gz
 *.rar
-
-# JVM crash logs
-hs_err_pid*
-replay_pid*
-
-# Maven
-target/
-
-# IntelliJ
-.idea/
-*.iml
-out/
-
-# Segredos e configurações locais
-.env
-application-local.properties
-application-local.yml
-
-# Sistema operacional
-.DS_Store
-Thumbs.db
-
-# Dados locais (arquivos enviados e banco de desenvolvimento)
-uploads/
-data/
-config/
