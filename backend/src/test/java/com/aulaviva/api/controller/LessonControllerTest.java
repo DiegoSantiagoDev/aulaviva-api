@@ -95,4 +95,22 @@ class LessonControllerTest {
                 .andExpect(jsonPath("$.status").value("PROCESSING"))
                 .andExpect(jsonPath("$.hasAudio").value(true));
     }
+
+    @Test
+    void listShowsHasImagesOnlyForLessonsWithImages() throws Exception {
+        int withImage = createLesson();
+        int withoutImage = createLesson();
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+        MockMultipartFile image = new MockMultipartFile(
+                "file", "quadro.png", "image/png", png);
+
+        mvc.perform(multipart("/api/lessons/{id}/images", withImage).file(image))
+                .andExpect(status().is2xxSuccessful());
+
+        mvc.perform(get("/api/lessons"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == " + withImage + ")].hasImages").value(true))
+                .andExpect(jsonPath("$[?(@.id == " + withoutImage + ")].hasImages").value(false))
+                .andExpect(jsonPath("$[?(@.id == " + withImage + ")].hasSlides").value(false));
+    }
 }
