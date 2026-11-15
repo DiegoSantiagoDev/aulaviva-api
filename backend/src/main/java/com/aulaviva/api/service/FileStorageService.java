@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.io.InputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,11 @@ public class FileStorageService {
         if (!kind.allows(extension)) {
             throw new UnsupportedFormatException(
                     "Formato não permitido. Use: " + describeExtensions(kind));
+        }
+
+        if (!FileSignature.matches(extension, readHeader(file))) {
+            throw new InvalidFileException(
+                    "O conteúdo do arquivo não corresponde ao formato " + extension + ".");
         }
 
         String storedName = UUID.randomUUID() + extension;
@@ -82,6 +88,16 @@ public class FileStorageService {
             throw new StorageException("Não foi possível criar a pasta " + directory, e);
         }
         return directory;
+    }
+
+    private byte[] readHeader(MultipartFile file) {
+        try (InputStream in = file.getInputStream()) {
+            return in.readNBytes(12);
+
+        } catch (IOException e) {
+            throw new StorageException("Falha ao ler o arquivo enviado.", e);
+
+        }
     }
 
     private String extractExtension(String originalName) {

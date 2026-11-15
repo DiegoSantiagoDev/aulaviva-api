@@ -82,8 +82,13 @@ class LessonControllerTest {
     @Test
     void acceptsAudioAndStartsProcessing() throws Exception {
         int id = createLesson();
+        byte[] mp3 = {'I', 'D', '3', 4, 0, 0, 0, 0, 0, 0};
+
         MockMultipartFile audio = new MockMultipartFile(
-                "file", "aula.mp3", "audio/mpeg", "dados-de-audio".getBytes(StandardCharsets.UTF_8));
+                "file",
+                "aula.mp3",
+                "audio/mpeg",
+                mp3);
 
         mvc.perform(multipart("/api/lessons/{id}/audio", id).file(audio))
                 .andExpect(status().isAccepted())

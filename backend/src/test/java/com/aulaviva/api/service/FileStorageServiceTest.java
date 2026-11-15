@@ -39,10 +39,31 @@ class FileStorageServiceTest {
 
     @Test
     void storesValidAudioWithGeneratedName() {
-        String storedName = service.store(file("Aula.MP3", "conteudo"), MediaKind.AUDIO);
+        byte[] mp3 = {'I', 'D', '3', 4, 0, 0, 0, 0, 0, 0};
+        MockMultipartFile audio = new MockMultipartFile(
+                "file", "Aula.MP3", "audio/mpeg", mp3);
+
+        String storedName = service.store(audio, MediaKind.AUDIO);
 
         assertTrue(storedName.endsWith(".mp3"));
         assertTrue(Files.exists(service.resolve(MediaKind.AUDIO, storedName)));
+    }
+
+    @Test
+    void storesValidPng() {
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+        MockMultipartFile image = new MockMultipartFile(
+                "file", "quadro.png", "image/png", png);
+
+        String storedName = service.store(image, MediaKind.IMAGE);
+
+        assertTrue(storedName.endsWith(".png"));
+    }
+
+    @Test
+    void rejectsFileWhoseContentDoesNotMatchExtension() {
+        assertThrows(InvalidFileException.class,
+                () -> service.store(file("falso.mp3", "isto nao e um audio"), MediaKind.AUDIO));
     }
 
     @Test
