@@ -3,9 +3,11 @@ package com.aulaviva.api.service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import com.aulaviva.api.dto.slide.SlidePresentation;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.logging.log4j.message.LoggerNameAwareMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -59,8 +61,12 @@ public class LessonService {
     }
 
     public List<LessonListItem> list() {
+        Set<Long> lessonIdsWithImages = images.findLessonIdsWithImages();
+
         return lessons.findAllByOrderByCreatedAtDesc().stream()
-                .map(LessonMapper::toListItem)
+                .map(lesson -> LessonMapper.toListItem(
+                        lesson,
+                        lessonIdsWithImages.contains(lesson.getId())))
                 .toList();
     }
 

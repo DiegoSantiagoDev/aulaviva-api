@@ -37,7 +37,7 @@ public final class LessonMapper {
                 lesson.getCreatedAt());
     }
 
-    public static LessonListItem toListItem(Lesson lesson) {
+    public static LessonListItem toListItem(Lesson lesson, boolean hasImages) {
         boolean hasSlides = lesson.getPresentation() != null
                 && !lesson.getPresentation().isBlank();
 
@@ -47,6 +47,7 @@ public final class LessonMapper {
                 lesson.getSubject(),
                 lesson.getStatus(),
                 hasSlides,
+                hasImages,
                 lesson.getCreatedAt());
     }
 

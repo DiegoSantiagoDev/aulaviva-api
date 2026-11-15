@@ -10,5 +10,6 @@ public record LessonListItem(
         String subject,
         LessonStatus status,
         boolean hasSlides,
+        boolean hasImages,
         Instant createdAt) {
 }
