@@ -1,0 +1,272 @@
+/* =====================================================================
+   PEÇAS COMPARTILHADAS pelas telas redesenhadas
+   Cores e medidas vêm de tokens.css. Não coloque cores soltas aqui.
+   ===================================================================== */
+
+/* Evita que filhos largos (faixa de filtros, tabelas) estourem a largura no celular */
+.av-pagina { min-width: 0; max-width: 100%; }
+.av-pagina > * { min-width: 0; max-width: 100%; }
+
+/* Página de conteúdo centralizado (404, entrada etc.) */
+.av-pagina-centro {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  text-align: center;
+  background: var(--av-fundo);
+  color: var(--av-primaria);
+}
+
+/* ---------- Tipografia ---------- */
+.av-titulo {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  color: var(--av-primaria);
+}
+.av-lead {
+  margin-top: 0.6rem;
+  max-width: 38rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--av-texto-suave);
+}
+
+/* ---------- Pílulas de status ---------- */
+.av-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--av-primaria-suave);
+  background: var(--av-superficie-2);
+}
+.av-pill-erro    { color: var(--av-erro);    background: var(--av-erro-suave); }
+.av-pill-aviso   { color: var(--av-aviso);   background: var(--av-aviso-suave); }
+.av-pill-sucesso { color: var(--av-sucesso); background: var(--av-sucesso-suave); }
+
+/* ---------- Botões ---------- */
+.av-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.3s var(--av-ease), color 0.3s var(--av-ease),
+    transform 0.3s var(--av-ease), box-shadow 0.3s var(--av-ease), border-color 0.3s var(--av-ease);
+}
+.av-btn:active { transform: translateY(0) scale(0.98); }
+.av-btn:focus-visible { outline: 3px solid var(--av-foco); outline-offset: 3px; }
+.av-btn-lg { min-height: 3rem; padding: 0.8rem 1.6rem; font-size: 0.9rem; }
+
+.av-btn-primario {
+  color: var(--av-fundo);
+  background: var(--av-primaria);
+  border: 1px solid transparent;
+}
+.av-btn-primario:hover {
+  background: var(--av-terra-escuro);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(122, 54, 24, 0.6);
+}
+.av-btn-suave {
+  color: var(--av-primaria);
+  background: rgba(201, 162, 39, 0.14);
+  border: 1px solid transparent;
+}
+.av-btn-suave:hover { background: rgba(201, 162, 39, 0.26); }
+.av-btn-contorno {
+  color: var(--av-primaria);
+  background: transparent;
+  border: 1px solid var(--av-ouro);
+}
+.av-btn-contorno:hover {
+  background: rgba(201, 162, 39, 0.14);
+  transform: translateY(-1px);
+}
+/* Botão de ouro para fundos escuros (tinta): seções escuras e rodapé da página institucional */
+.av-btn-ouro {
+  color: var(--av-primaria);
+  background: var(--av-ouro);
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+.av-btn-ouro:hover {
+  background: var(--av-ouro-claro);
+  transform: translateY(-2px);
+  box-shadow: var(--av-sombra);
+}
+.av-btn-ouro:focus-visible { outline-color: var(--av-ouro-claro); }
+.av-btn-erro {
+  color: #fff;
+  background: var(--av-erro);
+  border: 1px solid transparent;
+}
+.av-btn-erro:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(163, 48, 42, 0.7);
+}
+
+/* ---------- Estados: erro, vazio, sem resultado ---------- */
+.av-estado {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 2.25rem 1.75rem;
+  text-align: center;
+  border-radius: var(--av-raio-lg);
+  background: var(--av-superficie);
+  border: 1px solid var(--av-linha);
+  box-shadow: var(--av-sombra);
+}
+.av-estado-icone {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  border-radius: 999px;
+}
+.av-estado-erro { border-color: rgba(163, 48, 42, 0.3); background: linear-gradient(var(--av-erro-suave), var(--av-erro-suave)), var(--av-superficie); }
+.av-estado-erro .av-estado-icone { color: var(--av-erro); background: var(--av-erro-suave); }
+.av-estado-aviso .av-estado-icone { color: var(--av-aviso); background: var(--av-aviso-suave); }
+.av-estado-vazio .av-estado-icone { color: var(--av-ouro-escuro); background: rgba(201, 162, 39, 0.16); }
+.av-estado-titulo {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.65rem;
+  line-height: 1.15;
+  color: var(--av-primaria);
+}
+.av-estado-texto {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--av-texto-suave);
+}
+.av-estado .av-emblema-mini {
+  width: 5rem;
+  height: 5rem;
+  margin: 0 auto 0.75rem;
+  color: var(--av-primaria);
+  opacity: 0.55;
+}
+
+/* ---------- Cabeçalho de tela com emblema (biblioteca, painel do professor) ---------- */
+.av-topo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: var(--av-raio-lg);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(201, 162, 39, 0.14) 0%, transparent 55%),
+    var(--av-superficie);
+  box-shadow: inset 0 0 0 1px var(--av-linha-forte), var(--av-sombra);
+}
+@media (min-width: 640px) {
+  .av-topo {
+    flex-direction: row;
+    align-items: center;
+    padding: 2rem 2.25rem;
+    gap: 1.75rem;
+  }
+}
+
+.av-emblema {
+  flex: none;
+  width: 5.5rem;
+  height: 5.5rem;
+  color: var(--av-primaria);
+}
+@media (min-width: 640px) {
+  .av-emblema { width: 6.5rem; height: 6.5rem; }
+}
+
+/* ---------- Filtros em chips (disciplinas, status) ---------- */
+.av-filtros {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem 0.25rem 0.5rem;
+  margin: 0 -0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--av-ouro) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 768px) {
+  .av-filtros { flex-wrap: wrap; overflow: visible; padding-bottom: 0.25rem; }
+}
+.av-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.6rem 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--av-primaria-suave);
+  background: var(--av-superficie);
+  border: 1px solid var(--av-linha);
+  cursor: pointer;
+  transition: background-color 0.3s var(--av-ease), color 0.3s var(--av-ease),
+    border-color 0.3s var(--av-ease), box-shadow 0.3s var(--av-ease), transform 0.3s var(--av-ease);
+}
+.av-chip:hover {
+  border-color: var(--av-ouro);
+  background: rgba(201, 162, 39, 0.12);
+}
+.av-chip:active { transform: scale(0.97); }
+.av-chip:focus-visible { outline: 3px solid var(--av-foco); outline-offset: 2px; }
+.av-chip-qtd {
+  min-width: 1.5rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  background: var(--av-linha);
+  color: var(--av-primaria-suave);
+  transition: background-color 0.3s var(--av-ease), color 0.3s var(--av-ease);
+}
+.av-chip[aria-pressed='true'] {
+  color: var(--av-fundo);
+  background: var(--av-primaria);
+  border-color: var(--av-primaria);
+  box-shadow: var(--av-sombra);
+}
+.av-chip[aria-pressed='true'] .av-chip-qtd {
+  background: var(--av-ouro);
+  color: var(--av-primaria);
+}
+
+
+/* ---------- Movimento reduzido (vale para toda tela com .av-pagina ou .av-pagina-centro) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .av-pagina *, .av-pagina *::before, .av-pagina *::after,
+  .av-pagina-centro *, .av-pagina-centro *::before, .av-pagina-centro *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

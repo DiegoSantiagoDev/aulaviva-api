@@ -1,0 +1,277 @@
+/* =====================================================================
+   Tela "Biblioteca de Aulas"
+   Cores: src/styles/tokens.css  |  Peças reutilizáveis: src/styles/compartilhado.css
+   Aqui ficam só os estilos específicos desta tela.
+   (O cabeçalho .av-topo/.av-emblema e os chips .av-chip/.av-filtros foram
+   promovidos para compartilhado.css, porque o painel do professor também usa.)
+   ===================================================================== */
+
+.av-resumo {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  font-size: 0.8rem;
+  color: var(--av-texto-suave);
+}
+.av-resumo strong { color: var(--av-primaria); font-weight: 700; }
+
+.av-atualizado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.av-ponto-ok {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--av-sucesso);
+  box-shadow: 0 0 0 3px var(--av-sucesso-suave);
+}
+
+/* Botões desta tela com alvo de toque de 44 px */
+.av-bib .av-btn { min-height: 2.75rem; }
+.av-bib .av-btn:disabled { opacity: 0.65; cursor: progress; transform: none; box-shadow: none; }
+
+/* ---------- Busca ---------- */
+.av-busca { position: relative; max-width: 36rem; }
+.av-busca-icone {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: var(--av-ouro-escuro);
+  pointer-events: none;
+}
+.av-busca-campo {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 2.75rem 0.75rem 2.9rem;
+  border-radius: var(--av-raio);
+  background: var(--av-superficie);
+  border: 1px solid var(--av-linha-forte);
+  color: var(--av-primaria);
+  font-size: 0.9rem;
+  box-shadow: var(--av-sombra-sm);
+  transition: border-color 0.3s var(--av-ease), box-shadow 0.3s var(--av-ease);
+}
+.av-busca-campo::placeholder { color: var(--av-texto-suave); opacity: 0.75; }
+.av-busca-campo:hover { border-color: var(--av-ouro); }
+.av-busca-campo:focus {
+  outline: none;
+  border-color: var(--av-ouro);
+  box-shadow: 0 0 0 4px rgba(201, 162, 39, 0.22);
+}
+.av-busca-limpar {
+  position: absolute;
+  right: 0.15rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  color: var(--av-texto-suave);
+  transition: color 0.2s, background-color 0.2s;
+}
+.av-busca-limpar:focus-visible { outline: 3px solid var(--av-foco); outline-offset: 0; }
+.av-busca-limpar:hover { color: var(--av-erro); background: var(--av-erro-suave); }
+
+/* ---------- Grupos por disciplina ---------- */
+.av-grupo-cab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.av-grupo-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: var(--av-raio-sm);
+  background: var(--tom-suave);
+  color: var(--tom);
+}
+.av-grupo-titulo {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  line-height: 1.1;
+  color: var(--av-primaria);
+}
+.av-grupo-qtd {
+  flex: none;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--av-texto-suave);
+  background: var(--av-linha);
+}
+.av-grupo-linha {
+  flex: 1;
+  height: 1px;
+  margin-left: 0.25rem;
+  background: linear-gradient(90deg, var(--av-linha-forte), transparent);
+}
+
+/* ---------- Cartão de aula ---------- */
+.av-cartao {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 12rem;
+  padding: 1.4rem 1.4rem 1.2rem 1.65rem;
+  overflow: hidden;
+  border-radius: var(--av-raio);
+  background: var(--av-superficie);
+  border: 1px solid var(--av-linha);
+  box-shadow: var(--av-sombra-sm);
+  cursor: pointer;
+  transition: transform 0.35s var(--av-ease), box-shadow 0.35s var(--av-ease),
+    border-color 0.35s var(--av-ease);
+}
+.av-cartao::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.3rem;
+  background: var(--tom-barra);
+  transition: width 0.35s var(--av-ease);
+}
+.av-cartao:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--av-sombra-alta);
+  border-color: var(--av-linha-forte);
+}
+.av-cartao:hover::before { width: 0.4rem; }
+.av-cartao:active { transform: translateY(-2px); }
+.av-cartao:focus-visible {
+  outline: 3px solid var(--av-foco);
+  outline-offset: 3px;
+}
+
+.av-cartao-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.75rem;
+}
+.av-tag {
+  max-width: 60%;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--tom);
+  background: var(--tom-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.av-data {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--av-texto-suave);
+}
+.av-cartao-titulo {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.55rem;
+  line-height: 1.2;
+  color: var(--av-primaria);
+  transition: color 0.3s var(--av-ease);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.av-cartao:hover .av-cartao-titulo { color: var(--av-terra); }
+
+.av-cartao-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--av-linha);
+  font-size: 0.8rem;
+}
+.av-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--av-primaria-suave);
+  background: var(--av-superficie-2);
+}
+.av-selo svg { color: var(--av-ouro-escuro); }
+.av-ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 700;
+  color: var(--av-primaria);
+  transition: color 0.3s var(--av-ease);
+}
+.av-cartao:hover .av-ver { color: var(--av-terra); }
+.av-ver svg { transition: transform 0.3s var(--av-ease); }
+.av-cartao:hover .av-ver svg { transform: translateX(4px); }
+
+/* ---------- Grade ---------- */
+.av-grade {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.av-grade > li { display: flex; min-width: 0; }
+.av-grade > li > .av-cartao { flex: 1; min-width: 0; }
+@media (min-width: 640px)  { .av-grade { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; } }
+@media (min-width: 1024px) { .av-grade { grid-template-columns: repeat(3, 1fr); } }
+
+/* ---------- Esqueleto de carregamento ---------- */
+.av-esq-barra {
+  border-radius: 0.5rem;
+  background: linear-gradient(
+    90deg,
+    var(--av-superficie-2) 0%,
+    rgba(201, 162, 39, 0.22) 50%,
+    var(--av-superficie-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
+.av-esq-cartao {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 12rem;
+  padding: 1.4rem 1.4rem 1.2rem 1.65rem;
+  border-radius: var(--av-raio);
+  background: var(--av-superficie);
+  border: 1px solid var(--av-linha);
+  box-shadow: var(--av-sombra-sm);
+}
+
+/* ---------- Movimento reduzido (específico do cartão) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .av-cartao:hover { transform: none; }
+}

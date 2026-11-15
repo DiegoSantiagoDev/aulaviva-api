@@ -1,0 +1,80 @@
+/* =====================================================================
+   TOKENS DE COR E FORMA — um único lugar para ajustar o visual
+   ---------------------------------------------------------------------
+   Estas variáveis valem para todas as telas redesenhadas.
+   A identidade do projeto (tinta, pergaminho, ouro, terracota, sálvia)
+   continua vindo do index.css (--ink, --parchment, --gold, --terra,
+   --sage...). Aqui só apontamos para elas e criamos VARIAÇÕES delas:
+   nenhum tom novo foge da paleta original.
+   ===================================================================== */
+
+:root {
+  /* ---- Identidade atual (preservada, vem do index.css) ---- */
+  --av-primaria: var(--ink, #1a1612);
+  --av-primaria-suave: var(--ink-soft, #3a342c);
+  --av-fundo: var(--parchment, #f5efe4);
+  --av-ouro: var(--gold, #c9a227);
+  --av-ouro-escuro: var(--gold-deep, #6b5a12);
+  --av-terra: var(--terra, #b5532a);
+  --av-terra-escuro: var(--terra-deep, #7a3618);
+  --av-salvia: var(--sage, #6b7a5a);
+  --av-salvia-escuro: var(--sage-deep, #4b5940);
+  --av-foco: var(--focus, #7a3618);
+
+  /* ---- Neutros: variações do pergaminho e da tinta ---- */
+  --av-superficie: #fcf9f2;          /* cartões: um passo mais claro que o pergaminho */
+  --av-superficie-2: #f0e8d6;        /* faixas e barras de carregamento */
+  --av-linha: rgba(26, 22, 18, 0.1); /* divisórias discretas (tinta a 10%) */
+  --av-linha-forte: rgba(201, 162, 39, 0.4); /* fio dourado */
+  --av-texto-suave: #655c4f;         /* texto secundário (contraste AA sobre o pergaminho) */
+
+  /* ---- Destaque: tinta quente = tinta + terracota ---- */
+  --av-destaque: #5e4636;
+  --av-destaque: color-mix(in srgb, var(--ink, #1a1612) 68%, var(--terra, #b5532a));
+  --av-destaque-suave: rgba(94, 70, 54, 0.12);
+
+  /* ---- Estados: cada um é uma variação de uma cor da paleta ---- */
+  --av-sucesso: #4a6b3c;             /* variação da sálvia, mais viva */
+  --av-sucesso-suave: rgba(74, 107, 60, 0.13);
+  --av-aviso: #9a6a0c;               /* variação do ouro, mais escura */
+  --av-aviso-suave: rgba(201, 162, 39, 0.17);
+  --av-erro: #a3302a;                /* variação da terracota, puxada para o vermelho */
+  --av-erro-suave: rgba(163, 48, 42, 0.08);
+
+  /* ---- Véus e palco escuro (visualizador de fotos): variações da tinta e do pergaminho ---- */
+  --av-veu: rgba(26, 22, 18, 0.86);        /* fundo do modal: tinta a 86% */
+  --av-veu-leve: rgba(26, 22, 18, 0.45);   /* sombra sobre a foto ao passar o mouse */
+  --av-veu-claro: rgba(245, 239, 228, 0.14); /* botões sobre o palco: pergaminho a 14% */
+  --av-palco: #14110d;                     /* palco da foto: um passo mais escuro que a tinta */
+
+  /* ---- Página institucional: menu em vidro e seção escura (tinta) ----
+     Todas são variações do pergaminho, do ouro e da tinta. */
+  --av-vidro: rgba(245, 239, 228, 0.92);            /* menu fixo: pergaminho a 92% */
+  --av-ouro-veu: rgba(201, 162, 39, 0.14);          /* ouro a 14%: fundos de destaque */
+  --av-ouro-halo: rgba(201, 162, 39, 0.08);         /* ouro a 8%: brilho difuso atrás de seções escuras */
+  --av-ouro-claro: var(--gold-soft, #e6d29a);       /* ouro suave: textos e fios sobre a tinta */
+  --av-noite-texto: rgba(245, 239, 228, 0.92);      /* texto principal sobre a tinta */
+  --av-noite-texto-suave: rgba(245, 239, 228, 0.74);/* texto secundário sobre a tinta */
+  --av-noite-texto-fraco: rgba(245, 239, 228, 0.6); /* itens ainda inativos (contraste 6:1) */
+  --av-noite-superficie: rgba(245, 239, 228, 0.06); /* blocos sobre a tinta */
+  --av-noite-superficie-2: rgba(245, 239, 228, 0.12);
+  --av-noite-linha: rgba(230, 210, 154, 0.3);       /* fio de ouro suave sobre a tinta */
+
+  /* ---- Página institucional, parte 2: faixa de privacidade (variação da sálvia) ---- */
+  --av-salvia-veu: rgba(107, 122, 90, 0.1);         /* sálvia a 10%: fundo da seção de privacidade */
+
+  /* ---- Forma e profundidade ---- */
+  --av-raio-sm: 0.75rem;
+  --av-raio: 1.1rem;
+  --av-raio-lg: 1.5rem;
+  --av-sombra-sm: 0 1px 2px rgba(26, 22, 18, 0.06), 0 2px 8px -4px rgba(26, 22, 18, 0.1);
+  --av-sombra: 0 2px 4px rgba(26, 22, 18, 0.05), 0 14px 30px -18px rgba(26, 22, 18, 0.28);
+  --av-sombra-alta: 0 4px 8px rgba(26, 22, 18, 0.06), 0 26px 44px -20px rgba(26, 22, 18, 0.36);
+  --av-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Tons por disciplina: usados via data-tom="..." ---- */
+[data-tom='ouro']     { --tom: var(--av-ouro-escuro);   --tom-suave: rgba(201, 162, 39, 0.18); --tom-barra: var(--av-ouro); }
+[data-tom='terra']    { --tom: var(--av-terra-escuro);  --tom-suave: rgba(181, 83, 42, 0.13);  --tom-barra: var(--av-terra); }
+[data-tom='salvia']   { --tom: var(--av-salvia-escuro); --tom-suave: rgba(107, 122, 90, 0.18); --tom-barra: var(--av-salvia); }
+[data-tom='destaque'] { --tom: var(--av-destaque);      --tom-suave: var(--av-destaque-suave); --tom-barra: var(--av-destaque); }
