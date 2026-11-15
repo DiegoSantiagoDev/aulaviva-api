@@ -38,11 +38,15 @@ public final class LessonMapper {
     }
 
     public static LessonListItem toListItem(Lesson lesson) {
+        boolean hasSlides = lesson.getPresentation() != null
+                && !lesson.getPresentation().isBlank();
+
         return new LessonListItem(
                 lesson.getId(),
                 lesson.getTitle(),
                 lesson.getSubject(),
                 lesson.getStatus(),
+                hasSlides,
                 lesson.getCreatedAt());
     }
 
