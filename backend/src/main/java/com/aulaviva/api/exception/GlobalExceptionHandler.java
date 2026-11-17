@@ -76,4 +76,14 @@ public class GlobalExceptionHandler {
                 status.value(), status.getReasonPhrase(), message, Instant.now());
         return ResponseEntity.status(status).body(body);
     }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(AccountNotApprovedException.class)
+    public ResponseEntity<ErrorResponse> handleAccountNotApproved(AccountNotApprovedException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
 }
