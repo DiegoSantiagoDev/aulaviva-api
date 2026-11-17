@@ -181,11 +181,13 @@ public class GroqSummaryClient implements SummaryClient {
     private final RestClient client;
     private final AiProperties properties;
     private final ObjectMapper objectMapper;
+    private final AiRetry retry;
 
-    public GroqSummaryClient(RestClient aiRestClient, AiProperties properties, ObjectMapper objectMapper) {
+    public GroqSummaryClient(RestClient aiRestClient, AiProperties properties, ObjectMapper objectMapper, AiRetry retry) {
         this.client = aiRestClient;
         this.properties = properties;
         this.objectMapper = objectMapper;
+        this.retry = retry;
     }
 
     @Override
@@ -204,7 +206,6 @@ public class GroqSummaryClient implements SummaryClient {
 
         log.info("Gerando resumo da aula com {} imagem(ns) de apoio", imagesToSend.size());
 
-        // Sem fotos, o conteúdo vai como texto simples; com fotos, usamos conteúdo multimodal.
         Object userContent = text;
         if (!imagesToSend.isEmpty()) {
             List<Object> parts = new ArrayList<>();
@@ -223,22 +224,25 @@ public class GroqSummaryClient implements SummaryClient {
                 "messages", List.of(systemMessage, userMessage));
 
         try {
-            ChatResponse response = client.post()
+            ChatResponse response = retry.execute("resumo", () -> client.post()
                     .uri("/chat/completions")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()
-                    .body(ChatResponse.class);
+                    .body(ChatResponse.class));
 
             return extractContent(response);
+
         } catch (RestClientResponseException e) {
             log.error("Resumo recusado pela API: HTTP {} - {}",
                     e.getStatusCode().value(), e.getResponseBodyAsString());
+
             throw new AiIntegrationException(
-                    "A API de resumo recusou a requisição (HTTP "
-                            + e.getStatusCode().value() + ").", e);
+                    AiErrorMessages.forStatus(e.getStatusCode().value(), "resumo"), e);
+
         } catch (RestClientException e) {
             throw new AiIntegrationException("Não foi possível conectar à API de resumo.", e);
+
         }
     }
 

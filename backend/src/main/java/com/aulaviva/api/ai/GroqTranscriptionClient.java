@@ -23,10 +23,12 @@ public class GroqTranscriptionClient implements TranscriptionClient {
 
     private final RestClient client;
     private final AiProperties properties;
+    private final AiRetry retry;
 
-    public GroqTranscriptionClient(RestClient aiRestClient, AiProperties properties) {
+    public GroqTranscriptionClient(RestClient aiRestClient, AiProperties properties, AiRetry retry) {
         this.client = aiRestClient;
         this.properties = properties;
+        this.retry = retry;
     }
 
     @Override
@@ -40,24 +42,26 @@ public class GroqTranscriptionClient implements TranscriptionClient {
         body.add("response_format", "text");
 
         try {
-            String text = client.post()
+            String text = retry.execute("transcrição", () -> client.post()
                     .uri("/audio/transcriptions")
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(body)
                     .retrieve()
-                    .body(String.class);
+                    .body(String.class));
 
             if (text == null || text.isBlank()) {
                 throw new AiIntegrationException(
                         "A transcrição veio vazia. Verifique se o áudio contém fala.");
             }
             return text.trim();
+
         } catch (RestClientResponseException e) {
             log.error("Transcrição recusada pela API: HTTP {} - {}",
                     e.getStatusCode().value(), e.getResponseBodyAsString());
+
             throw new AiIntegrationException(
-                    "A API de transcrição recusou a requisição (HTTP "
-                            + e.getStatusCode().value() + ").", e);
+                    AiErrorMessages.forStatus(e.getStatusCode().value(), "transcrição"), e);
+
         } catch (RestClientException e) {
             throw new AiIntegrationException(
                     "Não foi possível conectar à API de transcrição.", e);
