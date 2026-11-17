@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class LessonService {
 
     private static final Logger log = LoggerFactory.getLogger(LessonService.class);
+    private static final int MAX_IMAGES = 3;
 
     private final LessonRepository lessons;
     private final LessonImageRepository images;
@@ -104,6 +105,12 @@ public class LessonService {
 
     public ImageResponse addImage(Long id, MultipartFile file) {
         Lesson lesson = findLesson(id);
+        ensureNotProcessing(lesson);
+        if (images.countByLessonId(id) >= MAX_IMAGES) {
+            throw new InvalidStateException(
+                    "Cada aula aceita no máximo " + MAX_IMAGES + " fotos do quadro.");
+        }
+
         String storedName = storage.store(file, MediaKind.IMAGE);
         LessonImage image = images.save(
                 new LessonImage(lesson, storedName, file.getOriginalFilename()));

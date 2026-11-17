@@ -122,4 +122,22 @@ class LessonControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
     }
+
+    @Test
+    void rejectsFourthImage() throws Exception {
+        int id = createLesson();
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+
+        for (int i = 0; i < 3; i++) {
+            MockMultipartFile image = new MockMultipartFile(
+                    "file", "quadro" + i + ".png", "image/png", png);
+            mvc.perform(multipart("/api/lessons/{id}/images", id).file(image))
+                    .andExpect(status().is2xxSuccessful());
+        }
+
+        MockMultipartFile extra = new MockMultipartFile(
+                "file", "extra.png", "image/png", png);
+        mvc.perform(multipart("/api/lessons/{id}/images", id).file(extra))
+                .andExpect(status().isConflict());
+    }
 }

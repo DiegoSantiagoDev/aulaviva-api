@@ -17,4 +17,6 @@ public interface LessonImageRepository extends JpaRepository<LessonImage, Long> 
 
     @Query("select distinct i.lesson.id from LessonImage i")
     Set<Long> findLessonIdsWithImages();
+
+    long countByLessonId(Long lessonId);
 }
