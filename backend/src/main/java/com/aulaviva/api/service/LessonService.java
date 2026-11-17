@@ -5,8 +5,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
-import com.aulaviva.api.dto.slide.SlidePresentation;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -14,7 +12,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.aulaviva.api.dto.slide.SlidePresentation;
 import com.aulaviva.api.dto.CreateLessonRequest;
 import com.aulaviva.api.dto.ImageResponse;
 import com.aulaviva.api.dto.LessonListItem;
@@ -29,6 +29,7 @@ import com.aulaviva.api.model.MediaKind;
 import com.aulaviva.api.repository.LessonImageRepository;
 import com.aulaviva.api.repository.LessonRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @Service
 public class LessonService {
@@ -115,6 +116,34 @@ public class LessonService {
         LessonImage image = images.save(
                 new LessonImage(lesson, storedName, file.getOriginalFilename()));
         return LessonMapper.toImageResponse(lesson.getId(), image);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Lesson lesson = findLesson(id);
+        ensureNotProcessing(lesson);
+
+        List<LessonImage> lessonImages = images.findByLessonIdOrderByIdAsc(id);
+        String audioFileName = lesson.getAudioFileName();
+
+        images.deleteAll(lessonImages);
+        lessons.delete(lesson);
+
+        storage.deleteQuietly(MediaKind.AUDIO, audioFileName);
+        lessonImages.forEach(image ->
+                storage.deleteQuietly(MediaKind.IMAGE, image.getFileName()));
+    }
+
+    @Transactional
+    public void deleteImage(Long lessonId, Long imageId) {
+        Lesson lesson = findLesson(lessonId);
+        ensureNotProcessing(lesson);
+
+        LessonImage image = images.findByIdAndLessonId(imageId, lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Imagem não encontrada."));
+
+        images.delete(image);
+        storage.deleteQuietly(MediaKind.IMAGE, image.getFileName());
     }
 
     public Resource loadImage(Long lessonId, Long imageId, boolean staff) {

@@ -5,8 +5,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 import java.nio.charset.StandardCharsets;
+
+import com.jayway.jsonpath.JsonPath;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +17,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.security.test.context.support.WithMockUser;
-
-import com.jayway.jsonpath.JsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -139,5 +140,27 @@ class LessonControllerTest {
                 "file", "extra.png", "image/png", png);
         mvc.perform(multipart("/api/lessons/{id}/images", id).file(extra))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void deletesLessonAndItsImages() throws Exception {
+        int id = createLesson();
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+        MockMultipartFile image = new MockMultipartFile(
+                "file", "quadro.png", "image/png", png);
+        mvc.perform(multipart("/api/lessons/{id}/images", id).file(image))
+                .andExpect(status().is2xxSuccessful());
+
+        mvc.perform(delete("/api/lessons/{id}", id))
+                .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/lessons/{id}", id))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteUnknownLessonReturnsNotFound() throws Exception {
+        mvc.perform(delete("/api/lessons/999999"))
+                .andExpect(status().isNotFound());
     }
 }

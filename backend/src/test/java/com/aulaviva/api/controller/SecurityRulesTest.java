@@ -1,5 +1,6 @@
 package com.aulaviva.api.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,4 +70,9 @@ class SecurityRulesTest {
                 .andExpect(jsonPath("$.status").value("CREATED"));
     }
 
+    @Test
+    void anonymousCannotDeleteLesson() throws Exception {
+        mvc.perform(delete("/api/lessons/1"))
+                .andExpect(status().isUnauthorized());
+    }
 }

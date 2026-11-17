@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.aulaviva.api.dto.CreateLessonRequest;
 import com.aulaviva.api.dto.ImageResponse;
@@ -86,6 +87,20 @@ public class LessonController {
                 .cacheControl(CacheControl.noCache())
                 .header("X-Content-Type-Options", "nosniff")
                 .body(image);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/images/{imageId}")
+    public ResponseEntity<Void> deleteImage(
+            @PathVariable("id") Long id,
+            @PathVariable("imageId") Long imageId) {
+        service.deleteImage(id, imageId);
+        return ResponseEntity.noContent().build();
     }
 
     private static boolean isStaff(Authentication authentication) {
