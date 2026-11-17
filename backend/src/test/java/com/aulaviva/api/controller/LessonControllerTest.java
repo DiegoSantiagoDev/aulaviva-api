@@ -115,4 +115,11 @@ class LessonControllerTest {
                 .andExpect(jsonPath("$[?(@.id == " + withoutImage + ")].hasImages").value(false))
                 .andExpect(jsonPath("$[?(@.id == " + withImage + ")].hasSlides").value(false));
     }
+
+    @Test
+    void invalidIdReturnsBadRequest() throws Exception {
+        mvc.perform(get("/api/lessons/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
 }

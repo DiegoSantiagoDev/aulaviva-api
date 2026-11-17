@@ -174,13 +174,17 @@ public class LessonService {
 
         try {
             return objectMapper.readValue(json, SlidePresentation.class);
+
         } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Erro ao converter apresentação", e);
+            log.warn("Apresentação salva em formato inválido; será ignorada.", e);
+            return null;
         }
     }
 
     private Lesson findVisibleLesson(Long id, boolean staff) {
+
         Lesson lesson = findLesson(id);
+
         if (!staff && lesson.getStatus() != LessonStatus.DONE) {
             throw new ResourceNotFoundException("Aula não encontrada: " + id);
         }

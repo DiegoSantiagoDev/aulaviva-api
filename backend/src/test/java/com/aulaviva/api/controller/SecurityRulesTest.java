@@ -12,6 +12,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+
+import com.aulaviva.api.model.Lesson;
+import com.aulaviva.api.repository.LessonRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,4 +43,30 @@ class SecurityRulesTest {
     void anonymousCanListLessons() throws Exception {
         mvc.perform(get("/api/lessons")).andExpect(status().isOk());
     }
+
+    @Autowired
+    private LessonRepository lessons;
+
+    @Test
+    void anonymousCannotSeeLessonThatIsNotDone() throws Exception {
+        Lesson lesson = lessons.save(new Lesson("Rascunho", "Teste"));
+
+        mvc.perform(get("/api/lessons/{id}", lesson.getId()))
+                .andExpect(status().isNotFound());
+
+        mvc.perform(get("/api/lessons"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == " + lesson.getId() + ")]").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(roles = "PROFESSOR")
+    void professorSeesLessonThatIsNotDone() throws Exception {
+        Lesson lesson = lessons.save(new Lesson("Rascunho do professor", "Teste"));
+
+        mvc.perform(get("/api/lessons/{id}", lesson.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CREATED"));
+    }
+
 }
