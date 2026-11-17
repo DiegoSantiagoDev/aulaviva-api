@@ -7,7 +7,6 @@ import java.util.Set;
 
 import com.aulaviva.api.dto.slide.SlidePresentation;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.logging.log4j.message.LoggerNameAwareMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -70,8 +69,8 @@ public class LessonService {
                 .toList();
     }
 
-    public LessonResponse get(Long id) {
-        return toResponse(findLesson(id));
+    public LessonResponse get(Long id, boolean staff) {
+        return toResponse(findVisibleLesson(id, staff));
     }
 
     public LessonResponse uploadAudio(Long id, MultipartFile file) {
@@ -111,7 +110,9 @@ public class LessonService {
         return LessonMapper.toImageResponse(lesson.getId(), image);
     }
 
-    public Resource loadImage(Long lessonId, Long imageId) {
+    public Resource loadImage(Long lessonId, Long imageId, boolean staff) {
+        findVisibleLesson(lessonId, staff);
+
         LessonImage image = images.findByIdAndLessonId(imageId, lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Imagem não encontrada."));
 
@@ -120,6 +121,17 @@ public class LessonService {
             throw new ResourceNotFoundException("O arquivo da imagem não foi encontrado.");
         }
         return new FileSystemResource(path);
+    }
+
+    public List<LessonListItem> list(boolean staff) {
+        Set<Long> lessonIdsWithImages = images.findLessonIdsWithImages();
+
+        return lessons.findAllByOrderByCreatedAtDesc().stream()
+                .filter(lesson -> staff || lesson.getStatus() == LessonStatus.DONE)
+                .map(lesson -> LessonMapper.toListItem(
+                        lesson,
+                        lessonIdsWithImages.contains(lesson.getId())))
+                .toList();
     }
 
     // ---- métodos auxiliares ----
@@ -165,5 +177,13 @@ public class LessonService {
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Erro ao converter apresentação", e);
         }
+    }
+
+    private Lesson findVisibleLesson(Long id, boolean staff) {
+        Lesson lesson = findLesson(id);
+        if (!staff && lesson.getStatus() != LessonStatus.DONE) {
+            throw new ResourceNotFoundException("Aula não encontrada: " + id);
+        }
+        return lesson;
     }
 }

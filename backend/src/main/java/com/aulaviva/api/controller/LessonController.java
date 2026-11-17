@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,13 +44,13 @@ public class LessonController {
     }
 
     @GetMapping
-    public List<LessonListItem> list() {
-        return service.list();
+    public List<LessonListItem> list(Authentication authentication) {
+        return service.list(isStaff(authentication));
     }
 
     @GetMapping("/{id}")
-    public LessonResponse get(@PathVariable("id") Long id) {
-        return service.get(id);
+    public LessonResponse get(@PathVariable("id") Long id, Authentication authentication) {
+        return service.get(id, isStaff(authentication));
     }
 
     @PostMapping(value = "/{id}/audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -74,8 +75,9 @@ public class LessonController {
     @GetMapping("/{id}/images/{imageId}")
     public ResponseEntity<Resource> getImage(
             @PathVariable("id") Long id,
-            @PathVariable("imageId") Long imageId) {
-        Resource image = service.loadImage(id, imageId);
+            @PathVariable("imageId") Long imageId,
+            Authentication authentication) {
+        Resource image = service.loadImage(id, imageId, isStaff(authentication));
         MediaType type = MediaTypeFactory.getMediaType(image)
                 .orElse(MediaType.APPLICATION_OCTET_STREAM);
 
@@ -84,5 +86,11 @@ public class LessonController {
                 .cacheControl(CacheControl.noCache())
                 .header("X-Content-Type-Options", "nosniff")
                 .body(image);
+    }
+
+    private static boolean isStaff(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_PROFESSOR")
+                        || authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }
