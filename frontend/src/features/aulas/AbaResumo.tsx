@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { analisarResumo } from '../../lib/resumo';
-import { copiarTexto } from '../../lib/clipboard';
+import { analisarResumo } from '../../lib/resumo.ts';
+import { copiarTexto } from '../../lib/clipboard.ts';
 import { Copy, Check, Printer, BookOpen, Clock, ListTree, AlertCircle } from 'lucide-react';
 
 interface AbaResumoProps {

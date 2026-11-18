@@ -14,10 +14,9 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Path alias — depth-invariant imports for src (@/foo === src/foo from any file) */
-    "baseUrl": "./",
+    /* Alias de caminho (sem baseUrl, que está obsoleto no TypeScript recente) */
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
 
     /* Linting */

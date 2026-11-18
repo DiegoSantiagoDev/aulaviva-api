@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { SlidePresentation } from '../../api/tipos';
-import { derivarSlides } from './deckSlides';
-import SlideItemRenderer from './SlideItemRenderer';
-import MiniaturasSlides from './MiniaturasSlides';
-import DeckImpressao from './DeckImpressao';
+import { SlidePresentation } from '../../api/tipos.ts';
+import { derivarSlides } from './deckSlides.ts';
+import SlideItemRenderer from './SlideItemRenderer.tsx';
+import MiniaturasSlides from './MiniaturasSlides.tsx';
+import DeckImpressao from './DeckImpressao.tsx';
 import {
   ChevronLeft,
   ChevronRight,

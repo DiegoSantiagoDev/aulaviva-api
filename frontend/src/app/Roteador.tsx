@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 interface RoteadorContextType {
   rota: string;
@@ -61,27 +61,17 @@ export function RoteadorProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('hashchange', aoMudarHash);
   }, []);
 
-  const navegar = (caminho: string) => {
+  const navegar = useCallback((caminho: string) => {
     const hashFormatado = caminho.startsWith('/') ? `#${caminho}` : `#/${caminho}`;
     window.location.hash = hashFormatado;
-  };
+  }, []);
 
-  const parametros: Record<string, string> = {};
-  const matchAula = estadoRota.rota.match(/^\/aulas\/(\d+)$/);
-  if (matchAula) {
-    parametros.id = matchAula[1];
-  }
+  const valor = useMemo<RoteadorContextType>(() => {
+    const parametros: Record<string, string> = {};
+    const matchAula = estadoRota.rota.match(/^\/aulas\/(\d+)$/);
+    if (matchAula) parametros.id = matchAula[1];
+    return { rota: estadoRota.rota, parametros, searchParams: estadoRota.searchParams, navegar };
+  }, [estadoRota, navegar]);
 
-  return (
-    <RoteadorContext.Provider
-      value={{
-        rota: estadoRota.rota,
-        parametros,
-        searchParams: estadoRota.searchParams,
-        navegar,
-      }}
-    >
-      {children}
-    </RoteadorContext.Provider>
-  );
+  return <RoteadorContext.Provider value={valor}>{children}</RoteadorContext.Provider>;
 }

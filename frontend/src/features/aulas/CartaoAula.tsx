@@ -1,6 +1,7 @@
 import { Presentation, ImageIcon, ChevronRight, Calendar } from 'lucide-react';
-import { LessonListItem } from '../../api/tipos';
-import { tomDaDisciplina } from '../../lib/tomDisciplina';
+import { LessonListItem } from '../../api/tipos.ts';
+import { tomDaDisciplina } from '../../lib/tomDisciplina.ts';
+import { useInclinacao } from '../../animacoes/useInclinacao.ts';
 
 interface CartaoAulaProps {
   aula: LessonListItem;
@@ -24,8 +25,11 @@ function formatarData(dataIso: string): string {
  * Estilos: .av-cartao e filhos em aulas.css; o tom vem de data-tom (tokens.css).
  */
 export default function CartaoAula({ aula }: CartaoAulaProps) {
+  // Inclinação 3D leve que segue o mouse (desligada em toque e em "movimento reduzido").
+  const ref = useInclinacao<HTMLAnchorElement>(5);
   return (
     <a
+      ref={ref}
       href={`#/aulas/${aula.id}`}
       className="av-cartao"
       data-tom={tomDaDisciplina(aula.subject)}
@@ -47,13 +51,13 @@ export default function CartaoAula({ aula }: CartaoAulaProps) {
 
       <div className="av-cartao-rodape">
         <div className="flex flex-wrap items-center gap-2">
-          {aula.hasSlides === true && (
+          {aula.hasSlides && (
             <span className="av-selo" title="Apresentação de slides disponível">
               <Presentation size={12} aria-hidden="true" />
               <span>Slides</span>
             </span>
           )}
-          {aula.hasImages === true && (
+          {aula.hasImages && (
             <span className="av-selo" title="Fotos do quadro anexadas">
               <ImageIcon size={12} aria-hidden="true" />
               <span>Quadro</span>

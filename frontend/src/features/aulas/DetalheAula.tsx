@@ -1,14 +1,14 @@
 import { useEffect, useState, useCallback, useRef, type KeyboardEvent as EventoTecladoReact } from 'react';
-import { api } from '../../api/cliente';
-import { LessonResponse } from '../../api/tipos';
-import { useRoteador } from '../../app/Roteador';
-import AbaResumo from './AbaResumo';
-import AbaFotos from './AbaFotos';
-import VisualizadorSlides from '../slides/VisualizadorSlides';
-import EmblemaPerdido from '../../components/EmblemaPerdido';
-import EmblemaPreparando from '../../components/EmblemaPreparando';
-import EmblemaIndisponivel from '../../components/EmblemaIndisponivel';
-import { tomDaDisciplina } from '../../lib/tomDisciplina';
+import { api } from '../../api/cliente.ts';
+import { LessonResponse } from '../../api/tipos.ts';
+import { useRoteador } from '../../app/Roteador.tsx';
+import AbaResumo from './AbaResumo.tsx';
+import AbaFotos from './AbaFotos.tsx';
+import VisualizadorSlides from '../slides/VisualizadorSlides.tsx';
+import EmblemaPerdido from '../../components/EmblemaPerdido.tsx';
+import EmblemaPreparando from '../../components/EmblemaPreparando.tsx';
+import EmblemaIndisponivel from '../../components/EmblemaIndisponivel.tsx';
+import { tomDaDisciplina } from '../../lib/tomDisciplina.ts';
 import {
   ArrowLeft,
   Sparkles,
@@ -17,7 +17,6 @@ import {
   ImageIcon,
   Video,
   AlertCircle,
-  HelpCircle,
   Calendar,
   RefreshCw,
 } from 'lucide-react';
@@ -249,15 +248,6 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
         <button onClick={() => navegar('/aulas')} className="av-aula-voltar">
           <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           <span>Voltar à biblioteca</span>
-        </button>
-
-        <button
-          onClick={() => alert('O diálogo "Como foi gerado" com os prompts e instruções da IA será ativado na Fase 7.')}
-          className="av-btn av-btn-contorno av-aula-ajuda"
-          title="Ver as instruções e prompts que geraram este conteúdo"
-        >
-          <HelpCircle className="w-4 h-4" aria-hidden="true" />
-          <span>Como foi gerado</span>
         </button>
       </div>
 

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { api } from '../../api/cliente';
-import { LessonResponse, LessonStatus } from '../../api/tipos';
-import EmblemaPreparando from '../../components/EmblemaPreparando';
-import { AlertCircle, CheckCircle2, ExternalLink, Loader2, RefreshCw, RotateCw } from 'lucide-react';
+import { api } from '../../api/cliente.ts';
+import { ApiError, LessonResponse, LessonStatus } from '../../api/tipos.ts';
+import ConfirmarDialogo from '../../components/ui/ConfirmarDialogo.tsx';
+import EmblemaPreparando from '../../components/EmblemaPreparando.tsx';
+import { AlertCircle, CheckCircle2, ExternalLink, Loader2, RefreshCw, RotateCw, Trash2 } from 'lucide-react';
 
 interface AcompanhamentoProps {
   aulaId: number;
@@ -10,6 +11,8 @@ interface AcompanhamentoProps {
   tokenAtualizacao: number;
   /** Avisa o painel quando o status da aula muda, para atualizar a lista. */
   onStatusMudou: () => void;
+  /** Chamado depois que a aula foi excluída no servidor (o painel limpa a seleção e recarrega a lista). */
+  onExcluida: () => void;
   /** Conteúdo exibido abaixo do status quando a aula carregou (envio de áudio e fotos). */
   children: (aula: LessonResponse) => ReactNode;
 }
@@ -39,8 +42,12 @@ export default function AcompanhamentoProcessamento({
   aulaId,
   tokenAtualizacao,
   onStatusMudou,
+  onExcluida,
   children,
 }: AcompanhamentoProps) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExclusao, setErroExclusao] = useState<string | null>(null);
   const [aula, setAula] = useState<LessonResponse | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -122,6 +129,19 @@ export default function AcompanhamentoProcessamento({
       setReprocessando(false);
       await buscar(true);
       onStatusMudouRef.current();
+    }
+  };
+
+  const excluir = async () => {
+    setExcluindo(true);
+    setErroExclusao(null);
+    try {
+      await api.excluirAula(aulaId);
+      setConfirmando(false);
+      onExcluida();
+    } catch (err) {
+      setErroExclusao((err as ApiError).message);
+      setExcluindo(false);
     }
   };
 
@@ -237,6 +257,19 @@ export default function AcompanhamentoProcessamento({
               <span>{reprocessando ? 'Reprocessando…' : 'Reprocessar aula'}</span>
             </button>
           )}
+          <button
+            type="button"
+            className="av-btn av-btn-contorno av-btn-perigo"
+            onClick={() => {
+              setErroExclusao(null);
+              setConfirmando(true);
+            }}
+            disabled={aula.status === 'PROCESSING'}
+            title={aula.status === 'PROCESSING' ? 'Aguarde o fim do processamento para excluir' : undefined}
+          >
+            <Trash2 className="w-4 h-4" aria-hidden="true" />
+            <span>Excluir aula</span>
+          </button>
           {aula.status === 'DONE' && (
             <a className="av-btn av-btn-suave" href={`#/aulas/${aula.id}`}>
               <ExternalLink className="w-4 h-4" aria-hidden="true" />
@@ -259,6 +292,17 @@ export default function AcompanhamentoProcessamento({
       )}
 
       <div className="av-prof-cartao av-prof-envios">{children(aula)}</div>
+
+      <ConfirmarDialogo
+        aberto={confirmando}
+        titulo="Excluir esta aula?"
+        descricao={`“${aula.title}” será apagada junto com o áudio, o resumo, os slides e todas as fotos. Esta ação não pode ser desfeita.`}
+        rotuloConfirmar="Excluir aula"
+        ocupado={excluindo}
+        erro={erroExclusao}
+        onConfirmar={() => void excluir()}
+        onCancelar={() => setConfirmando(false)}
+      />
     </div>
   );
 }

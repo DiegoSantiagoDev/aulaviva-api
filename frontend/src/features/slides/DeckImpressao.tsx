@@ -1,5 +1,5 @@
-import SlideItemRenderer from './SlideItemRenderer';
-import type { SlideDerivado } from './deckSlides';
+import SlideItemRenderer from './SlideItemRenderer.tsx';
+import type { SlideDerivado } from './deckSlides.ts';
 import './slides.css';
 
 interface DeckImpressaoProps {

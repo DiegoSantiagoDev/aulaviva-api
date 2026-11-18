@@ -1,14 +1,16 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { api } from '../../api/cliente';
-import { LessonListItem } from '../../api/tipos';
-import CartaoAula from './CartaoAula';
-import FiltroDisciplinas from './FiltroDisciplinas';
-import EsqueletoAulas from './EsqueletoAulas';
-import EmblemaBoasVindas from '../../components/EmblemaBoasVindas';
-import EmblemaLeitura from '../../components/EmblemaLeitura';
-import EmblemaPerdido from '../../components/EmblemaPerdido';
-import { tomDaDisciplina } from '../../lib/tomDisciplina';
+import { api } from '../../api/cliente.ts';
+import { LessonListItem } from '../../api/tipos.ts';
+import CartaoAula from './CartaoAula.tsx';
+import FiltroDisciplinas from './FiltroDisciplinas.tsx';
+import EsqueletoAulas from './EsqueletoAulas.tsx';
+import EmblemaBoasVindas from '../../components/EmblemaBoasVindas.tsx';
+import EmblemaLeitura from '../../components/EmblemaLeitura.tsx';
+import EmblemaPerdido from '../../components/EmblemaPerdido.tsx';
+import { tomDaDisciplina } from '../../lib/tomDisciplina.ts';
 import { Search, X, RefreshCw, AlertCircle, BookOpen } from 'lucide-react';
+import { gsap, ScrollTrigger, useGSAP } from '../../animacoes/motor.ts';
+import { EASE, prefereMovimentoReduzido } from '../../animacoes/movimento.ts';
 import './aulas.css';
 
 function normalizar(texto: string): string {
@@ -47,11 +49,9 @@ export default function BibliotecaAulas() {
     if (!silencioso) setCarregando(true);
     try {
       const lista = await api.listarAulas();
-      // Regra 1: Somente aulas com status DONE
-      // Regra 2: Esconder aulas com hidden verdadeiro
-      const aulasValidas = lista.filter(
-        (a) => a.status === 'DONE' && a.hidden !== true
-      );
+      // O backend já entrega só aulas DONE a visitantes; professores e admin recebem todas.
+      // Aqui garantimos que nenhuma aula indisponível apareça como pronta na biblioteca.
+      const aulasValidas = lista.filter((a) => a.status === 'DONE');
       setAulas(aulasValidas);
       setErro(null);
       jaCarregouRef.current = true;
@@ -160,6 +160,23 @@ export default function BibliotecaAulas() {
 
   const temAulas = aulas.length > 0;
   const mostrarLista = !carregando && !erro && gruposDisciplinas.length > 0;
+
+  // Entrada em cascata dos cartões conforme entram na tela (e quando o filtro muda a lista).
+  const listaRef = useRef<HTMLDivElement>(null);
+  const chaveLista = useMemo(() => aulasFiltradas.map((a) => a.id).join(','), [aulasFiltradas]);
+  useGSAP(
+    () => {
+      if (!mostrarLista || prefereMovimentoReduzido()) return;
+      gsap.set('.av-grade > li', { autoAlpha: 0, y: 34 });
+      ScrollTrigger.batch('.av-grade > li', {
+        start: 'top 94%',
+        once: true,
+        onEnter: (itens: Element[]) =>
+          gsap.to(itens, { autoAlpha: 1, y: 0, duration: 0.9, ease: EASE.acender, stagger: 0.07, overwrite: true }),
+      });
+    },
+    { scope: listaRef, dependencies: [chaveLista, mostrarLista], revertOnUpdate: true }
+  );
   const semResultado = !carregando && !erro && temAulas && aulasFiltradas.length === 0;
   const bibliotecaVazia = !carregando && !erro && !temAulas;
 
@@ -312,7 +329,7 @@ export default function BibliotecaAulas() {
 
       {/* Listagem agrupada por disciplina */}
       {mostrarLista && (
-        <div className="space-y-12">
+        <div className="space-y-12" ref={listaRef}>
           {gruposDisciplinas.map((grupo, indice) => {
             const idTitulo = `av-grupo-${indice}`;
             return (

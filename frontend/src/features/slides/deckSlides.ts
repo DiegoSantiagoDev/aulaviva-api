@@ -1,5 +1,5 @@
-import { SlideItem, SlideLayout } from '../../api/tipos';
-import { resolverLayout } from './heuristicaLayout';
+import { SlideItem, SlideLayout } from '../../api/tipos.ts';
+import { resolverLayout } from './heuristicaLayout.ts';
 
 /** Máximo de itens visíveis por slide (seção 7.5 do prompt). */
 export const MAX_ITENS_POR_SLIDE = 6;

@@ -1,6 +1,6 @@
-import { LessonListItem, LessonStatus } from '../../api/tipos';
+import { LessonListItem, LessonStatus } from '../../api/tipos.ts';
 import { AlertCircle, CheckCircle2, ClipboardList, Clock, RefreshCw, Search } from 'lucide-react';
-import EmblemaProfessor from '../../components/EmblemaProfessor';
+import EmblemaProfessor from '../../components/EmblemaProfessor.tsx';
 
 export type FiltroStatus = 'TODAS' | LessonStatus;
 

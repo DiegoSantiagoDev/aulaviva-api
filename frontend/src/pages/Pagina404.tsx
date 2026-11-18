@@ -1,5 +1,5 @@
-import { useRoteador } from '../app/Roteador';
-import EmblemaPerdido from '../components/EmblemaPerdido';
+import { useRoteador } from '../app/Roteador.tsx';
+import EmblemaPerdido from '../components/EmblemaPerdido.tsx';
 import { Home, BookOpen } from 'lucide-react';
 
 export default function Pagina404() {

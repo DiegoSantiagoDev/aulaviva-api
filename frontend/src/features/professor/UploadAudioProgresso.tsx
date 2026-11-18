@@ -1,13 +1,9 @@
 import { useId, useState, type ChangeEvent, type DragEvent } from 'react';
-import { api } from '../../api/cliente';
-import { formatarTamanho } from '../../lib/imagemCompressao';
+import { api } from '../../api/cliente.ts';
+import { formatarTamanho } from '../../lib/imagemCompressao.ts';
 import { AlertCircle, CheckCircle2, FileAudio, Loader2, UploadCloud } from 'lucide-react';
 
-/** Limite de tamanho do áudio, conforme o PLANO.md (fase 8). */
-export const LIMITE_AUDIO_BYTES = 25 * 1024 * 1024;
-
-/** Formatos aceitos pelo modelo de transcrição (Whisper). */
-const EXTENSOES_AUDIO = ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm', 'ogg', 'flac'];
+import { EXTENSOES_AUDIO, LIMITE_AUDIO_BYTES } from '../../config/limites.ts';
 
 interface UploadAudioProgressoProps {
   aulaId: number;
@@ -22,7 +18,7 @@ type Fase = 'parado' | 'enviando' | 'sucesso' | 'erro';
 
 function validarArquivo(arquivo: File): string | null {
   const ext = arquivo.name.split('.').pop()?.toLowerCase() ?? '';
-  if (!EXTENSOES_AUDIO.includes(ext)) {
+  if (!(EXTENSOES_AUDIO as readonly string[]).includes(ext)) {
     return `Formato não aceito. Use ${EXTENSOES_AUDIO.map((e) => e.toUpperCase()).join(', ')}.`;
   }
   if (arquivo.size === 0) return 'O arquivo está vazio.';
@@ -133,7 +129,7 @@ export default function UploadAudioProgresso({
         <input
           id={idZona}
           type="file"
-          accept="audio/*,.mp3,.mp4,.mpeg,.mpga,.m4a,.wav,.webm,.ogg,.flac"
+          accept=".mp3,.wav,.m4a,.ogg,.webm"
           className="av-prof-arquivo"
           onChange={aoEscolher}
           disabled={desabilitado}

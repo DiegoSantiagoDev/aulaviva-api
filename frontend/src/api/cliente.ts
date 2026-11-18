@@ -1,198 +1,132 @@
-import { recursos } from '../config/recursos';
-import { mockApi } from './mock';
+import { requisicao, mensagemDoCorpo } from './http.ts';
+import { encerrarSessao, obterToken } from '../auth/sessao.ts';
 import {
-  LessonListItem,
-  LessonResponse,
+  ApiError,
   CreateLessonRequest,
   ImageResponse,
-  PromptsResponse,
-  ApiError,
-} from './tipos';
+  LessonListItem,
+  LessonResponse,
+  LoginRequest,
+  LoginResponse,
+  MessageResponse,
+  RegisterRequest,
+  StatusConta,
+  UserSummary,
+} from './tipos.ts';
 
-const TIMEOUT_MS = 30000;
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
-function normalizarErro(err: unknown, fallbackMessage: string): ApiError {
-  if (err && typeof err === 'object' && 'status' in err && 'message' in err) {
-    return err as ApiError;
-  }
-  if (err instanceof Error) {
-    if (err.name === 'AbortError') {
-      return { status: 0, message: 'A requisição demorou muito para responder (tempo limite excedido).' };
-    }
-    return { status: 0, message: err.message || fallbackMessage };
-  }
-  return { status: 0, message: fallbackMessage };
-}
-
-async function requisicaoJson<T>(
-  caminho: string,
-  opcoes: RequestInit = {}
-): Promise<T> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-  try {
-    const res = await fetch(caminho, {
-      ...opcoes,
-      signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-        ...(opcoes.headers || {}),
-      },
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      let mensagem = `Erro HTTP ${res.status}`;
-      try {
-        const errorJson = await res.json();
-        mensagem = errorJson.message || errorJson.error || mensagem;
-      } catch {
-        // Sem corpo JSON
-      }
-      throw { status: res.status, message: mensagem } as ApiError;
-    }
-
-    return (await res.json()) as T;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw normalizarErro(error, 'Falha de comunicação com o servidor.');
-  }
-}
-
+/**
+ * Cliente da API do Aula Viva. Todas as rotas existem no backend
+ * (branch feature/auth); nada aqui é simulado.
+ */
 export const api = {
-  /**
-   * Lista todas as aulas disponíveis
-   */
-  listarAulas: async (): Promise<LessonListItem[]> => {
-    if (recursos.usarMock) return mockApi.listarAulas();
-    return requisicaoJson<LessonListItem[]>('/api/lessons');
-  },
-
-  /**
-   * Obtém detalhes de uma aula específica
-   */
-  obterAula: async (id: number): Promise<LessonResponse> => {
-    if (recursos.usarMock) return mockApi.obterAula(id);
-    return requisicaoJson<LessonResponse>(`/api/lessons/${id}`);
-  },
-
-  /**
-   * Cadastra uma nova aula (professor)
-   */
-  criarAula: async (dados: CreateLessonRequest): Promise<LessonResponse> => {
-    if (recursos.usarMock) return mockApi.criarAula(dados);
-    return requisicaoJson<LessonResponse>('/api/lessons', {
+  // ---------------------------------------------------------------- autenticação
+  /** POST /api/auth/login — público. 401: credenciais; 403: conta pendente ou rejeitada. */
+  entrar: (dados: LoginRequest): Promise<LoginResponse> =>
+    requisicao<LoginResponse>('/api/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: JSON_HEADERS,
       body: JSON.stringify(dados),
-    });
-  },
+      semToken: true,
+    }),
+
+  /** POST /api/auth/register — público. Sempre cria PROFESSOR com status PENDING. */
+  cadastrar: (dados: RegisterRequest): Promise<MessageResponse> =>
+    requisicao<MessageResponse>('/api/auth/register', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(dados),
+      semToken: true,
+    }),
+
+  // ---------------------------------------------------------------- administração (ADMIN)
+  /** GET /api/admin/users?status= — lista apenas professores. */
+  listarProfessores: (status: StatusConta): Promise<UserSummary[]> =>
+    requisicao<UserSummary[]>(`/api/admin/users?status=${encodeURIComponent(status)}`),
+
+  aprovarProfessor: (id: number): Promise<UserSummary> =>
+    requisicao<UserSummary>(`/api/admin/users/${id}/approve`, { method: 'POST' }),
+
+  rejeitarProfessor: (id: number): Promise<UserSummary> =>
+    requisicao<UserSummary>(`/api/admin/users/${id}/reject`, { method: 'POST' }),
+
+  // ---------------------------------------------------------------- aulas
+  /** GET /api/lessons — público vê só DONE; professor e admin veem todas. */
+  listarAulas: (): Promise<LessonListItem[]> => requisicao<LessonListItem[]>('/api/lessons'),
+
+  obterAula: (id: number): Promise<LessonResponse> => requisicao<LessonResponse>(`/api/lessons/${id}`),
+
+  criarAula: (dados: CreateLessonRequest): Promise<LessonResponse> =>
+    requisicao<LessonResponse>('/api/lessons', {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(dados),
+    }),
+
+  /** DELETE /api/lessons/{id} — 409 enquanto a aula está em PROCESSING. */
+  excluirAula: (id: number): Promise<void> => requisicao<void>(`/api/lessons/${id}`, { method: 'DELETE' }),
+
+  reprocessar: (id: number): Promise<LessonResponse> =>
+    requisicao<LessonResponse>(`/api/lessons/${id}/reprocess`, { method: 'POST' }),
 
   /**
-   * Envia arquivo de áudio com acompanhamento de progresso real via XMLHttpRequest
+   * POST /api/lessons/{id}/audio (multipart, resposta 202).
+   * Usa XMLHttpRequest para ter progresso real de envio.
    */
   enviarAudio: (
     id: number,
     arquivo: File,
     noProgresso?: (porcentagem: number) => void
-  ): Promise<LessonResponse> => {
-    if (recursos.usarMock) {
-      return mockApi.enviarAudio(id, arquivo, noProgresso);
-    }
-
-    return new Promise((resolve, reject) => {
+  ): Promise<LessonResponse> =>
+    new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `/api/lessons/${id}/audio`, true);
+      xhr.setRequestHeader('Accept', 'application/json');
+      const token = obterToken();
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
       if (noProgresso) {
         xhr.upload.onprogress = (evento) => {
-          if (evento.lengthComputable) {
-            const porcentagem = Math.round((evento.loaded / evento.total) * 100);
-            noProgresso(porcentagem);
-          }
+          if (evento.lengthComputable) noProgresso(Math.round((evento.loaded / evento.total) * 100));
         };
       }
 
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            const resposta = JSON.parse(xhr.responseText);
-            resolve(resposta as LessonResponse);
+            resolve(JSON.parse(xhr.responseText) as LessonResponse);
           } catch {
-            resolve({ id, status: 'PROCESSING' } as LessonResponse);
+            reject({ status: xhr.status, message: 'Resposta inesperada do servidor.' } as ApiError);
           }
-        } else {
-          let mensagem = `Falha no envio (HTTP ${xhr.status})`;
-          try {
-            const jsonErro = JSON.parse(xhr.responseText);
-            mensagem = jsonErro.message || mensagem;
-          } catch {
-            // Nada
-          }
-          reject({ status: xhr.status, message: mensagem } as ApiError);
+          return;
         }
+        if (xhr.status === 401 && token) encerrarSessao('expirada');
+        reject({
+          status: xhr.status,
+          message: mensagemDoCorpo(xhr.responseText, `Falha no envio (HTTP ${xhr.status})`),
+        } as ApiError);
       };
 
-      xhr.onerror = () => {
+      xhr.onerror = () =>
         reject({
           status: 0,
           message: 'Não foi possível enviar o áudio. Verifique a conexão e tente novamente.',
         } as ApiError);
-      };
 
       const formData = new FormData();
       formData.append('file', arquivo);
       xhr.send(formData);
-    });
-  },
+    }),
 
-  /**
-   * Reprocessa uma aula que falhou ou que recebeu novas mídias
-   */
-  reprocessar: async (id: number): Promise<LessonResponse> => {
-    if (recursos.usarMock) return mockApi.reprocessar(id);
-    return requisicaoJson<LessonResponse>(`/api/lessons/${id}/reprocess`, {
-      method: 'POST',
-    });
-  },
-
-  /**
-   * Envia uma foto do quadro
-   */
-  enviarImagem: async (id: number, arquivo: File): Promise<ImageResponse> => {
-    if (recursos.usarMock) return mockApi.enviarImagem(id, arquivo);
-
+  /** POST /api/lessons/{id}/images (multipart). Máximo de 3 por aula; 409 acima disso ou em PROCESSING. */
+  enviarImagem: (id: number, arquivo: File): Promise<ImageResponse> => {
     const formData = new FormData();
     formData.append('file', arquivo);
-
-    const res = await fetch(`/api/lessons/${id}/images`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!res.ok) {
-      let msg = 'Erro ao enviar foto do quadro.';
-      try {
-        const errJson = await res.json();
-        msg = errJson.message || msg;
-      } catch {
-        // Sem corpo JSON
-      }
-      throw { status: res.status, message: msg } as ApiError;
-    }
-
-    return (await res.json()) as ImageResponse;
+    return requisicao<ImageResponse>(`/api/lessons/${id}/images`, { method: 'POST', body: formData });
   },
 
-  /**
-   * Obtém os prompts usados para gerar o conteúdo (Como foi gerado)
-   */
-  obterPrompts: async (id: number): Promise<PromptsResponse> => {
-    if (recursos.usarMock) return mockApi.obterPrompts(id);
-    // Endpoint ainda não existe no back-end real. O 404/405 é propagado
-    // para a tela "Como foi gerado" tratar como "ainda não disponível".
-    return requisicaoJson<PromptsResponse>(`/api/lessons/${id}/prompts`);
-  },
+  /** DELETE /api/lessons/{id}/images/{imageId} — o backend apaga também o arquivo. */
+  excluirImagem: (id: number, imagemId: number): Promise<void> =>
+    requisicao<void>(`/api/lessons/${id}/images/${imagemId}`, { method: 'DELETE' }),
 };

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
-import { SlideItem, SlideLayout } from '../../api/tipos';
-import EmblemaCapaSlide from '../../components/EmblemaCapaSlide';
+import { SlideItem, SlideLayout } from '../../api/tipos.ts';
+import EmblemaCapaSlide from '../../components/EmblemaCapaSlide.tsx';
 import { Check, HelpCircle, Lightbulb, Sparkles } from 'lucide-react';
 import './slides.css';
 

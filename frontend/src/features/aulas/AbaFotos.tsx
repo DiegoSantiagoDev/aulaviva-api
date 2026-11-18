@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ImageResponse } from '../../api/tipos';
+import { ImageResponse } from '../../api/tipos.ts';
 import { ImageIcon, X, ChevronLeft, ChevronRight, ZoomIn, AlertTriangle } from 'lucide-react';
 
 interface AbaFotosProps {

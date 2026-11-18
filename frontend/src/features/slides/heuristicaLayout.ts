@@ -1,4 +1,4 @@
-import { SlideItem, SlideLayout } from '../../api/tipos';
+import { SlideItem, SlideLayout } from '../../api/tipos.ts';
 
 function normalizarTexto(texto: string): string {
   return texto

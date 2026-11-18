@@ -1,6 +1,6 @@
 import { useId, useState, type FormEvent } from 'react';
-import { api } from '../../api/cliente';
-import { LessonResponse } from '../../api/tipos';
+import { api } from '../../api/cliente.ts';
+import { LessonResponse } from '../../api/tipos.ts';
 import { AlertCircle, CheckCircle2, Loader2, Plus } from 'lucide-react';
 
 export const LIMITE_TITULO = 150;

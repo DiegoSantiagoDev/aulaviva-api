@@ -43,14 +43,14 @@
 @media (min-width: 640px) { .av-prof-cartao { padding: 1.5rem; } }
 
 .av-prof-h2 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--av-fonte-display);
   font-weight: 700;
   font-size: 1.7rem;
   line-height: 1.1;
   color: var(--av-primaria);
 }
 .av-prof-h3 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--av-fonte-display);
   font-weight: 700;
   font-size: 1.4rem;
   line-height: 1.15;
@@ -173,7 +173,7 @@
 }
 .av-prof-item-titulo {
   grid-column: 1 / -1;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--av-fonte-display);
   font-weight: 700;
   font-size: 1.2rem;
   line-height: 1.2;
@@ -211,7 +211,7 @@
 .av-prof-data { font-size: 0.78rem; color: var(--av-texto-suave); }
 .av-prof-aula-titulo {
   margin-top: 0.75rem;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--av-fonte-display);
   font-weight: 700;
   font-size: clamp(1.7rem, 3.4vw, 2.3rem);
   line-height: 1.12;
@@ -364,3 +364,16 @@
   .av-prof-barra-cheia { transition: none; }
   .av-prof-ponto-vivo { animation: none; }
 }
+
+/* ---------- Exclusões (aula e foto) ---------- */
+.av-btn-perigo { color: var(--av-erro); border-color: rgba(255, 130, 114, 0.4); }
+.av-btn-perigo:hover:not(:disabled) { background: var(--av-erro-suave); border-color: var(--av-erro); }
+.av-prof-mini { position: relative; }
+.av-prof-mini-excluir {
+  position: absolute; top: 0.3rem; right: 0.3rem; z-index: 2; display: grid; place-items: center;
+  width: 1.9rem; height: 1.9rem; border-radius: 999px; color: #fff; background: rgba(7, 6, 13, 0.78);
+  border: 1px solid rgba(242, 238, 251, 0.25); backdrop-filter: blur(6px);
+  transition: background-color 0.25s var(--av-ease), transform 0.25s var(--av-ease);
+}
+.av-prof-mini-excluir:hover:not(:disabled) { background: var(--av-erro); color: #1a0603; transform: scale(1.08); }
+.av-prof-mini-excluir:disabled { opacity: 0.45; cursor: not-allowed; }

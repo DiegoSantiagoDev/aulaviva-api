@@ -63,7 +63,7 @@
 .av-busca-campo:focus {
   outline: none;
   border-color: var(--av-ouro);
-  box-shadow: 0 0 0 4px rgba(201, 162, 39, 0.22);
+  box-shadow: 0 0 0 4px rgba(255, 165, 31, 0.22);
 }
 .av-busca-limpar {
   position: absolute;
@@ -98,7 +98,7 @@
   color: var(--tom);
 }
 .av-grupo-titulo {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--av-fonte-display);
   font-weight: 700;
   font-size: clamp(1.6rem, 3vw, 2rem);
   line-height: 1.1;
@@ -186,7 +186,7 @@
   color: var(--av-texto-suave);
 }
 .av-cartao-titulo {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--av-fonte-display);
   font-weight: 700;
   font-size: 1.55rem;
   line-height: 1.2;
@@ -253,7 +253,7 @@
   background: linear-gradient(
     90deg,
     var(--av-superficie-2) 0%,
-    rgba(201, 162, 39, 0.22) 50%,
+    rgba(255, 165, 31, 0.22) 50%,
     var(--av-superficie-2) 100%
   );
   background-size: 200% 100%;

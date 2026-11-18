@@ -6,6 +6,7 @@
 @import '@fontsource/manrope/500.css';
 @import '@fontsource/manrope/600.css';
 @import '@fontsource/manrope/700.css';
+@import '@fontsource/manrope/800.css';
 
 @tailwind base;
 @tailwind components;
@@ -13,6 +14,7 @@
 
 @layer base {
   :root {
+    color-scheme: dark;
     --ink: #1a1612;
     --parchment: #f5efe4;
     --gold: #c9a227;
@@ -37,8 +39,8 @@
 
   body {
     font-family: 'Manrope', system-ui, sans-serif;
-    background: var(--parchment);
-    color: var(--ink);
+    background: #07060d;
+    color: #f2eefb;
     overflow-x: hidden;
   }
 
@@ -96,10 +98,10 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.04;
+    opacity: 0.05;
     background-image:
-      radial-gradient(circle at 25% 30%, #000 1px, transparent 1px),
-      radial-gradient(circle at 75% 70%, #000 1px, transparent 1px);
+      radial-gradient(circle at 25% 30%, #fff 1px, transparent 1px),
+      radial-gradient(circle at 75% 70%, #fff 1px, transparent 1px);
     background-size: 4px 4px, 6px 6px;
   }
 }
@@ -399,9 +401,9 @@
   animation: none !important;
 }
 
-/* Focus styles: terra profundo garante contraste AA sobre pergaminho. */
+/* Foco visível: âmbar claro, contraste alto sobre o vazio. */
 *:focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--av-foco, #ffd08a);
   outline-offset: 2px;
 }
 

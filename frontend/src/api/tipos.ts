@@ -42,12 +42,10 @@ export interface LessonListItem {
   subject: string;
   status: LessonStatus;
   createdAt: string;
-  /** Campo planejado para visibilidade */
-  hidden?: boolean;
-  /** Campo planejado para indicar se possui slides */
-  hasSlides?: boolean;
-  /** Campo planejado para indicar se possui fotos do quadro */
-  hasImages?: boolean;
+  /** Enviado pelo backend: a aula tem apresentação de slides gerada. */
+  hasSlides: boolean;
+  /** Enviado pelo backend: a aula tem fotos do quadro. */
+  hasImages: boolean;
 }
 
 export interface LessonResponse {
@@ -57,19 +55,11 @@ export interface LessonResponse {
   status: LessonStatus;
   hasAudio: boolean;
   summary: string | null;
-  /**
-   * Hoje só o modo de exemplo (`?mock=1`) fornece este campo.
-   * O back-end real ainda não gera slides; quando ausente, a UI mostra
-   * uma mensagem honesta de indisponibilidade.
-   */
-  presentation?: SlidePresentation | null;
+  /** Apresentação gerada pelo backend; `null` enquanto não houver slides. */
+  presentation: SlidePresentation | null;
   failureReason: string | null;
   images: ImageResponse[];
   createdAt: string;
-  /** Campo planejado para visibilidade */
-  hidden?: boolean;
-  /** Campo planejado para indicar se possui slides */
-  hasSlides?: boolean;
 }
 
 export interface CreateLessonRequest {
@@ -77,23 +67,49 @@ export interface CreateLessonRequest {
   subject: string;
 }
 
-export interface PromptDetail {
-  version?: string;
-  model?: string;
-  generatedAt?: string;
-  text: string;
-}
-
-export interface PromptsResponse {
-  summary: PromptDetail;
-  slides: PromptDetail | null;
-  video: {
-    text: string;
-  };
-}
-
 export interface ApiError {
   status: number;
   message: string;
   timestamp?: string;
+}
+
+/* ---------------------------------------------------------------------
+   Autenticação e administração (contratos do backend, branch feature/auth)
+   --------------------------------------------------------------------- */
+
+/** Papéis do backend. O aluno é só o visitante anônimo: não há login de ALUNO. */
+export type Papel = 'ADMIN' | 'PROFESSOR' | 'ALUNO';
+
+export type StatusConta = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  /** Instante ISO-8601 em que o JWT expira (8 h por padrão no backend). */
+  expiresAt: string;
+  name: string;
+  role: Papel;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface UserSummary {
+  id: number;
+  name: string;
+  email: string;
+  role: Papel;
+  status: StatusConta;
+  createdAt: string;
 }

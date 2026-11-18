@@ -1,8 +1,10 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
-import { api } from '../../api/cliente';
-import { ImageResponse } from '../../api/tipos';
-import { comprimirImagem, formatarTamanho } from '../../lib/imagemCompressao';
-import { AlertCircle, CheckCircle2, ImageIcon, ImageOff, Loader2, RefreshCw, Camera } from 'lucide-react';
+import { api } from '../../api/cliente.ts';
+import { ApiError, ImageResponse } from '../../api/tipos.ts';
+import ConfirmarDialogo from '../../components/ui/ConfirmarDialogo.tsx';
+import { MAX_FOTOS_POR_AULA } from '../../config/limites.ts';
+import { comprimirImagem, formatarTamanho } from '../../lib/imagemCompressao.ts';
+import { AlertCircle, CheckCircle2, ImageIcon, ImageOff, Loader2, RefreshCw, Camera, Trash2 } from 'lucide-react';
 
 interface UploadFotosCanvasProps {
   aulaId: number;
@@ -10,6 +12,10 @@ interface UploadFotosCanvasProps {
   jaEnviadas: ImageResponse[];
   /** Chamado quando pelo menos uma foto foi aceita pelo servidor. */
   onEnviadas: () => void;
+  /** Chamado depois que uma foto foi excluída no servidor. */
+  onExcluida: () => void;
+  /** O backend recusa envio e exclusão de fotos enquanto a aula processa (HTTP 409). */
+  bloqueado?: boolean;
 }
 
 type EstadoFoto = 'aguardando' | 'comprimindo' | 'enviando' | 'enviada' | 'erro';
@@ -30,10 +36,28 @@ const ROTULO_ESTADO: Record<EstadoFoto, string> = {
   erro: 'Falhou',
 };
 
-function MiniaturaEnviada({ foto }: { foto: ImageResponse }) {
+function MiniaturaEnviada({
+  foto,
+  podeExcluir,
+  onExcluir,
+}: {
+  foto: ImageResponse;
+  podeExcluir: boolean;
+  onExcluir: (foto: ImageResponse) => void;
+}) {
   const [falhou, setFalhou] = useState(false);
   return (
     <li className="av-prof-mini" title={foto.originalName}>
+      <button
+        type="button"
+        className="av-prof-mini-excluir"
+        onClick={() => onExcluir(foto)}
+        disabled={!podeExcluir}
+        aria-label={`Excluir a foto ${foto.originalName}`}
+        title={podeExcluir ? 'Excluir foto' : 'Aguarde o fim do processamento para excluir'}
+      >
+        <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+      </button>
       {falhou ? (
         <span className="av-prof-mini-falha">
           <ImageOff className="w-4 h-4" aria-hidden="true" />
@@ -46,12 +70,16 @@ function MiniaturaEnviada({ foto }: { foto: ImageResponse }) {
   );
 }
 
-export default function UploadFotosCanvas({ aulaId, jaEnviadas, onEnviadas }: UploadFotosCanvasProps) {
+export default function UploadFotosCanvas({ aulaId, jaEnviadas, onEnviadas, onExcluida, bloqueado = false }: UploadFotosCanvasProps) {
   const idBase = useId();
   const [itens, setItens] = useState<ItemFoto[]>([]);
   const [ocupado, setOcupado] = useState(false);
   const proximaChave = useRef(1);
   const ativoRef = useRef(true);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [aExcluir, setAExcluir] = useState<ImageResponse | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
+  const [erroExcluir, setErroExcluir] = useState<string | null>(null);
 
   useEffect(() => {
     ativoRef.current = true;
@@ -91,12 +119,35 @@ export default function UploadFotosCanvas({ aulaId, jaEnviadas, onEnviadas }: Up
     if (algumaEnviada) onEnviadas();
   };
 
+  const confirmarExclusao = async () => {
+    if (!aExcluir) return;
+    setExcluindo(true);
+    setErroExcluir(null);
+    try {
+      await api.excluirImagem(aulaId, aExcluir.id);
+      setAExcluir(null);
+      onExcluida();
+    } catch (err) {
+      setErroExcluir((err as ApiError).message);
+    } finally {
+      if (ativoRef.current) setExcluindo(false);
+    }
+  };
+
   const aoEscolher = (e: ChangeEvent<HTMLInputElement>) => {
     const arquivos = Array.from(e.target.files ?? []);
     e.target.value = '';
-    if (arquivos.length === 0) return;
+    if (arquivos.length === 0 || bloqueado || restante === 0) return;
 
-    const novos: ItemFoto[] = arquivos.map((arquivo) => ({
+    // O backend aceita no máximo MAX_FOTOS_POR_AULA por aula; só enviamos o que cabe.
+    const aceitos = arquivos.slice(0, restante);
+    setAviso(
+      aceitos.length < arquivos.length
+        ? `Só cabem mais ${restante} ${restante === 1 ? 'foto' : 'fotos'} nesta aula (limite de ${MAX_FOTOS_POR_AULA}). As demais foram ignoradas.`
+        : null
+    );
+
+    const novos: ItemFoto[] = aceitos.map((arquivo) => ({
       chave: proximaChave.current++,
       arquivo,
       estado: 'aguardando',
@@ -116,6 +167,9 @@ export default function UploadFotosCanvas({ aulaId, jaEnviadas, onEnviadas }: Up
 
   const limparConcluidas = () => setItens((lista) => lista.filter((i) => i.estado !== 'enviada'));
 
+  const emAndamento = itens.filter((i) => i.estado === 'aguardando' || i.estado === 'comprimindo' || i.estado === 'enviando').length;
+  const restante = Math.max(0, MAX_FOTOS_POR_AULA - jaEnviadas.length - emAndamento);
+  const semVaga = restante === 0;
   const total = itens.length;
   const enviadas = itens.filter((i) => i.estado === 'enviada').length;
   const comFalha = itens.filter((i) => i.estado === 'erro').length;
@@ -126,10 +180,29 @@ export default function UploadFotosCanvas({ aulaId, jaEnviadas, onEnviadas }: Up
     <section className="av-prof-bloco" aria-labelledby={`${idBase}-h`}>
       <h3 className="av-prof-h3" id={`${idBase}-h`}>Fotos do quadro</h3>
       <p className="av-prof-ajuda">
-        Opcional. Cada foto é reduzida no seu aparelho antes do envio (até 2000 px, abaixo de 3 MB).
+        Opcional, no máximo {MAX_FOTOS_POR_AULA} por aula ({jaEnviadas.length} de {MAX_FOTOS_POR_AULA} usadas). Cada foto é
+        reduzida no seu aparelho antes do envio (até 2000 px, abaixo de 3 MB).
       </p>
+      {bloqueado && (
+        <p className="av-prof-aviso av-prof-aviso-erro" role="status">
+          <AlertCircle className="w-4 h-4" aria-hidden="true" />
+          <span>Aguarde o fim do processamento para enviar ou excluir fotos.</span>
+        </p>
+      )}
+      {!bloqueado && semVaga && emAndamento === 0 && (
+        <p className="av-prof-ajuda">Limite atingido. Exclua uma foto para enviar outra.</p>
+      )}
+      {aviso && (
+        <p className="av-prof-aviso av-prof-aviso-erro" role="status">
+          <AlertCircle className="w-4 h-4" aria-hidden="true" />
+          <span>{aviso}</span>
+        </p>
+      )}
 
-      <label htmlFor={idEntrada} className={`av-btn av-btn-contorno av-prof-acao ${ocupado ? 'av-prof-zona-off' : ''}`}>
+      <label
+        htmlFor={idEntrada}
+        className={`av-btn av-btn-contorno av-prof-acao ${ocupado || bloqueado || semVaga ? 'av-prof-zona-off' : ''}`}
+      >
         <Camera className="w-4 h-4" aria-hidden="true" />
         <span>{ocupado ? 'Enviando fotos…' : 'Escolher fotos'}</span>
         <input
@@ -139,7 +212,7 @@ export default function UploadFotosCanvas({ aulaId, jaEnviadas, onEnviadas }: Up
           multiple
           className="av-prof-arquivo"
           onChange={aoEscolher}
-          disabled={ocupado}
+          disabled={ocupado || bloqueado || semVaga}
         />
       </label>
 
@@ -203,13 +276,36 @@ export default function UploadFotosCanvas({ aulaId, jaEnviadas, onEnviadas }: Up
           </p>
           <ul className="av-prof-minis" role="list">
             {jaEnviadas.map((foto) => (
-              <MiniaturaEnviada key={foto.id} foto={foto} />
+              <MiniaturaEnviada
+                key={foto.id}
+                foto={foto}
+                podeExcluir={!bloqueado}
+                onExcluir={(f) => {
+                  setErroExcluir(null);
+                  setAExcluir(f);
+                }}
+              />
             ))}
           </ul>
         </div>
       ) : (
         total === 0 && <p className="av-prof-vazio-linha">Nenhuma foto enviada ainda.</p>
       )}
+
+      <ConfirmarDialogo
+        aberto={aExcluir !== null}
+        titulo="Excluir esta foto?"
+        descricao={
+          aExcluir
+            ? `“${aExcluir.originalName}” será removida da aula e o arquivo será apagado do servidor. Esta ação não pode ser desfeita.`
+            : ''
+        }
+        rotuloConfirmar="Excluir foto"
+        ocupado={excluindo}
+        erro={erroExcluir}
+        onConfirmar={() => void confirmarExclusao()}
+        onCancelar={() => setAExcluir(null)}
+      />
     </section>
   );
 }

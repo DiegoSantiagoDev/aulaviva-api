@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { api } from '../../api/cliente';
-import { LessonListItem, LessonResponse } from '../../api/tipos';
-import EmblemaProfessor from '../../components/EmblemaProfessor';
-import FormNovaAula from './FormNovaAula';
-import ListaAulasProfessor, { type FiltroStatus } from './ListaAulasProfessor';
-import AcompanhamentoProcessamento from './AcompanhamentoProcessamento';
-import UploadAudioProgresso from './UploadAudioProgresso';
-import UploadFotosCanvas from './UploadFotosCanvas';
+import { api } from '../../api/cliente.ts';
+import { LessonListItem, LessonResponse } from '../../api/tipos.ts';
+import EmblemaProfessor from '../../components/EmblemaProfessor.tsx';
+import FormNovaAula from './FormNovaAula.tsx';
+import ListaAulasProfessor, { type FiltroStatus } from './ListaAulasProfessor.tsx';
+import AcompanhamentoProcessamento from './AcompanhamentoProcessamento.tsx';
+import UploadAudioProgresso from './UploadAudioProgresso.tsx';
+import UploadFotosCanvas from './UploadFotosCanvas.tsx';
 import './professor.css';
 
 const INTERVALO_LISTA_MS = 10000;
@@ -139,6 +139,10 @@ export default function PainelProfessor() {
               aulaId={selecionadaId}
               tokenAtualizacao={tokenAtualizacao}
               onStatusMudou={() => void carregarAulas(true)}
+              onExcluida={() => {
+                setSelecionadaId(null);
+                void carregarAulas(true);
+              }}
             >
               {(aula) => (
                 <>
@@ -148,7 +152,13 @@ export default function PainelProfessor() {
                     motivoBloqueio="Aguarde o fim do processamento para enviar outro áudio."
                     onEnviado={pedirAtualizacao}
                   />
-                  <UploadFotosCanvas aulaId={aula.id} jaEnviadas={aula.images} onEnviadas={pedirAtualizacao} />
+                  <UploadFotosCanvas
+                    aulaId={aula.id}
+                    jaEnviadas={aula.images}
+                    bloqueado={aula.status === 'PROCESSING'}
+                    onEnviadas={pedirAtualizacao}
+                    onExcluida={pedirAtualizacao}
+                  />
                 </>
               )}
             </AcompanhamentoProcessamento>
