@@ -22,8 +22,8 @@
 .inicio-vinheta {
   position: absolute; inset: 0;
   background:
-    radial-gradient(120% 90% at 50% 50%, transparent 45%, rgba(4, 3, 9, 0.75) 100%),
-    linear-gradient(180deg, rgba(7, 6, 13, 0.55) 0%, transparent 22%, transparent 70%, rgba(7, 6, 13, 0.7) 100%);
+    radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(3, 2, 2, 0.6) 100%),
+    linear-gradient(180deg, rgba(5, 4, 4, 0.4) 0%, transparent 18%, transparent 78%, rgba(5, 4, 4, 0.5) 100%);
 }
 .inicio-palco-css { position: absolute; right: -6vw; top: 12vh; width: min(78vw, 44rem); will-change: transform; }
 @media (min-width: 56rem) { .inicio-palco-css { right: 4vw; top: 14vh; } }
@@ -40,13 +40,11 @@ main { position: relative; z-index: 2; }
 
 /* ---------- Topo ---------- */
 .inicio-topo {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  /* Faz parte da abertura: rola junto com a página em vez de ficar tapando a cena. */
+  position: absolute; top: 0; left: 0; right: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: 1rem var(--pad);
-  transition: background-color 0.4s var(--av-ease), backdrop-filter 0.4s var(--av-ease), border-color 0.4s var(--av-ease);
-  border-bottom: 1px solid transparent;
 }
-.inicio-topo--rolado { background: rgba(7, 6, 13, 0.7); backdrop-filter: blur(14px); border-bottom-color: var(--av-linha); }
 .inicio-topo-nav { display: flex; align-items: center; gap: 0.3rem; }
 .inicio-link {
   display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 0.9rem; border-radius: 999px;
@@ -61,34 +59,38 @@ main { position: relative; z-index: 2; }
 .ini-rotulo {
   font-family: var(--av-fonte-mono); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.18em;
   text-transform: uppercase; color: var(--av-ouro-escuro);
+  text-shadow: 0 0 6px rgba(5, 4, 4, 0.9), 0 0 2px rgba(5, 4, 4, 0.9); /* protege o rótulo se passar sobre a gosma */
 }
 .ini-monumental {
   font-family: var(--av-fonte-titan); font-weight: 800; text-transform: uppercase;
   font-size: clamp(3.3rem, 12.6vw, 11.5rem); line-height: 0.86; letter-spacing: -0.055em;
-  text-shadow: 0 2px 40px rgba(7, 6, 13, 0.55);
+  text-shadow: 0 1px 3px rgba(5, 4, 4, 0.7), 0 1px 10px rgba(5, 4, 4, 0.45); /* curta: a máscara das linhas corta sombras grandes e elas viravam uma caixa escura */
 }
 .ini-monumental-medio { font-size: clamp(3rem, 11vw, 9.5rem); }
 .ini-mascara { display: block; overflow: hidden; padding: 0.04em 0.06em 0.1em 0; margin-bottom: -0.04em; }
 .ini-linha { display: block; will-change: transform; }
 .ini-brasa {
-  background: linear-gradient(100deg, #ffd08a 0%, #ffa51f 30%, #ff5b3a 62%, #ffa51f 100%);
+  /* Ouro claro → ouro: sempre mais claro que a gosma que fica atrás, com contorno curto escuro para separar.
+     O gradiente antigo terminava em coral (#ff4a1c), que sumia sobre a brasa. */
+  background: linear-gradient(100deg, #fff4c2 0%, #ffe27a 35%, #fff0a8 65%, #ffe27a 100%);
   background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: iniBrilho 7s ease-in-out infinite alternate;
   text-shadow: none; /* o texto é transparente: a sombra herdada apareceria por dentro das letras */
-  filter: drop-shadow(0 2px 24px rgba(7, 6, 13, 0.5));
+  /* Sombras curtas: a máscara .ini-mascara tem overflow hidden e cortaria uma sombra grande (virava uma caixa). */
+  filter: drop-shadow(0 1px 2px rgba(5, 4, 4, 0.9)) drop-shadow(0 0 1px rgba(5, 4, 4, 0.95));
 }
 @keyframes iniBrilho { to { background-position: 100% 0; } }
 .ini-titulo {
   font-family: var(--av-fonte-titan); font-weight: 800; text-transform: uppercase;
   font-size: clamp(2.2rem, 6.4vw, 5.2rem); line-height: 0.92; letter-spacing: -0.045em;
-  text-shadow: 0 2px 30px rgba(7, 6, 13, 0.6);
+  text-shadow: 0 1px 12px rgba(5, 4, 4, 0.55);
 }
 .ini-titulo-grande { font-size: clamp(2.4rem, 7.4vw, 6.4rem); }
 .ini-titulo em, .porta-titulo em {
   font-family: var(--av-fonte-display); font-style: italic; font-weight: 600; text-transform: none;
   letter-spacing: -0.02em; color: var(--av-ouro-escuro); font-size: 1.12em;
 }
-.ini-lead { max-width: 34rem; font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.6; color: var(--av-primaria-suave); }
+.ini-lead { max-width: 40rem; font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.6; color: var(--av-primaria-suave); }
 .ini-texto { max-width: 30rem; font-size: 1.02rem; line-height: 1.7; color: var(--av-primaria-suave); }
 
 /* ---------- Botões ---------- */
@@ -100,26 +102,26 @@ main { position: relative; z-index: 2; }
 }
 .ini-botao svg { transition: transform 0.35s var(--av-ease); }
 .ini-botao:hover svg { transform: translateX(4px); }
-.ini-botao-brasa { color: #1a0d02; background: linear-gradient(135deg, #ffd08a, #ffa51f 50%, #ff6a2e); }
+.ini-botao-brasa { color: #1a0d02; background: linear-gradient(135deg, #ffd84a, #ffb000 50%, #ff6a2e); }
 .ini-botao-brasa:hover { box-shadow: 0 0 0 1px rgba(255, 190, 90, 0.5), 0 14px 50px -10px rgba(255, 130, 40, 0.8); }
-.ini-botao-vidro { color: var(--av-primaria); border: 1px solid rgba(242, 238, 251, 0.28); background: rgba(242, 238, 251, 0.06); backdrop-filter: blur(10px); }
+.ini-botao-vidro { color: var(--av-primaria); border: 1px solid rgba(255, 255, 255, 0.28); background: rgba(255, 255, 255, 0.1); }
 .ini-botao-vidro:hover { border-color: var(--av-ouro); background: var(--av-ouro-veu); }
 
 /* ---------- Hero ---------- */
 .inicio-hero {
   position: relative; min-height: 100svh; display: grid; align-content: end;
-  padding: 7.5rem var(--pad) 5.5rem;
+  padding: 6.5rem var(--pad) 4.6rem;
 }
-.hero-conteudo { display: grid; gap: 1.4rem; max-width: 80rem; will-change: transform; }
-.hero-conteudo .ini-monumental { margin-block: 0.2rem 0.4rem; }
+.hero-conteudo { display: grid; gap: 0.9rem; max-width: 80rem; will-change: transform; }
+.hero-conteudo .ini-monumental { margin-block: 0.1rem 0.3rem; font-size: clamp(3.3rem, min(12.6vw, 13.2vh), 11.5rem); }
 .hero-rodape {
-  position: absolute; left: var(--pad); right: var(--pad); bottom: 1.6rem;
+  position: absolute; left: var(--pad); right: var(--pad); bottom: 1.2rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 }
 .hero-rodape .ini-rotulo { color: var(--av-texto-suave); }
 .hero-rolar { display: inline-flex; align-items: center; gap: 0.7rem; }
 .hero-rolar-ponto {
-  position: relative; width: 1.25rem; height: 2rem; border-radius: 999px; border: 1px solid rgba(242, 238, 251, 0.45);
+  position: relative; width: 1.25rem; height: 2rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.45);
 }
 .hero-rolar-ponto::after {
   content: ''; position: absolute; left: 50%; top: 0.35rem; width: 0.22rem; height: 0.45rem; margin-left: -0.11rem;
@@ -130,19 +132,28 @@ main { position: relative; z-index: 2; }
 
 /* ---------- História (seção fixada) ---------- */
 .inicio-historia { position: relative; height: 100svh; overflow: hidden; }
-.inicio-historia::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: linear-gradient(90deg, rgba(7, 6, 13, 0.82) 0%, rgba(7, 6, 13, 0.35) 55%, transparent 100%);
+/* Sombra de leitura: fica no palco fixo e muda só de opacidade. Antes era um ::before da seção,
+   cujas bordas de cima e de baixo apareciam como uma linha dura cortando a esfera. */
+.inicio-sombra {
+  position: absolute; inset: 0; opacity: 0; will-change: opacity;
+  background: linear-gradient(90deg, rgba(5, 4, 4, 0.82) 0%, rgba(5, 4, 4, 0.35) 55%, transparent 100%);
 }
 .hist-numeros {
   position: absolute; left: 0; bottom: -0.12em; z-index: 0; display: flex; width: 300vw; will-change: transform;
   font-family: var(--av-fonte-titan); font-weight: 800; line-height: 0.8; letter-spacing: -0.06em;
   font-size: clamp(14rem, 44vw, 46rem);
-  color: transparent; -webkit-text-stroke: 1px rgba(242, 238, 251, 0.14);
+  color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.14);
 }
 .hist-numeros span { flex: 0 0 100vw; padding-left: var(--pad); }
 .hist-cena { position: absolute; inset: 0; z-index: 1; display: grid; align-items: center; padding: 6rem var(--pad) 4rem; }
-.hist-bloco { display: grid; gap: 1.2rem; max-width: 34rem; }
+/* Com o menu lateral visível (≥ 1024 px) o conteúdo ganha uma coluna reservada à direita: nada fica por baixo dele. */
+@media (min-width: 64rem) { .hist-cena { padding-right: calc(var(--pad) + 8.5rem); } }
+.hist-bloco { position: relative; display: grid; gap: 1.2rem; max-width: 34rem; }
+/* Véu de leitura macio atrás do bloco: gradiente que some antes da borda, então nunca vira uma caixa ou linha dura. */
+.hist-bloco::before {
+  content: ''; position: absolute; inset: -3.5rem -4rem; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(5, 4, 4, 0.7) 0%, rgba(5, 4, 4, 0.5) 55%, rgba(5, 4, 4, 0) 100%);
+}
 .hist-bloco-direita { justify-self: end; }
 .hist-bloco .ini-titulo { margin-block: 0.2rem; }
 @media (max-width: 55.99rem) { .hist-bloco-direita { justify-self: start; } .hist-cena { align-items: end; padding-bottom: 5.5rem; } }
@@ -152,13 +163,15 @@ main { position: relative; z-index: 2; }
   display: grid; gap: 2.4rem; justify-items: end;
 }
 .hist-fio { position: absolute; right: -0.9rem; top: 0; bottom: 0; width: 1px; background: var(--av-linha); }
-.hist-fio-preenche { position: absolute; inset: 0; transform: scaleY(0); transform-origin: top; background: linear-gradient(180deg, var(--av-violeta), var(--av-ouro)); box-shadow: 0 0 10px rgba(255, 165, 31, 0.7); }
+.hist-fio-preenche { position: absolute; inset: 0; transform: scaleY(0); transform-origin: top; background: linear-gradient(180deg, var(--av-violeta), var(--av-ouro)); box-shadow: 0 0 10px rgba(255, 176, 0, 0.7); }
 .hist-passo {
   font-family: var(--av-fonte-mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--av-texto-suave); opacity: 0.55; transition: color 0.4s var(--av-ease), opacity 0.4s var(--av-ease);
+  color: var(--av-texto-suave); text-shadow: 0 0 6px rgba(5, 4, 4, 0.9); /* era opacity .55 = 3,6:1; agora 12,4:1 */
+  transition: color 0.4s var(--av-ease);
 }
-.hist-passo[data-ativo] { color: var(--av-ouro-escuro); opacity: 1; }
-@media (max-width: 40rem) { .hist-trilho { display: none; } }
+.hist-passo[data-ativo] { color: var(--av-ouro-escuro); font-weight: 700; }
+/* Abaixo de 1024 px o menu lateral some: não há espaço sem sobrepor o texto. */
+@media (max-width: 63.99rem) { .hist-trilho { display: none; } }
 
 .hist-onda { display: flex; align-items: center; gap: 3px; height: 3.2rem; margin-top: 0.6rem; }
 .hist-onda span {
@@ -171,18 +184,19 @@ main { position: relative; z-index: 2; }
 .hist-estados { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; margin: 0.4rem 0 0; }
 .hist-estados li {
   font-family: var(--av-fonte-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
-  padding: 0.5rem 0.9rem; border-radius: 999px; border: 1px solid var(--av-linha); color: var(--av-texto-suave);
+  padding: 0.5rem 0.9rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.28); color: var(--av-texto-suave);
+  background: rgba(5, 4, 4, 0.55);
 }
 .hist-estados li[data-vivo] { color: #1a0d02; background: var(--av-ouro); border-color: var(--av-ouro); animation: pulseGlow 2.2s ease-in-out infinite; }
 .hist-quadros { display: flex; gap: 0.7rem; margin-top: 0.5rem; }
 .hist-quadros span {
   display: grid; place-items: center; width: 5.2rem; aspect-ratio: 4 / 3; border-radius: 0.5rem;
   font-family: var(--av-fonte-mono); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--av-texto-suave); border: 1px dashed rgba(255, 165, 31, 0.5); background: rgba(255, 165, 31, 0.05);
+  color: var(--av-texto-suave); border: 1px dashed rgba(255, 176, 0, 0.5); background: rgba(255, 176, 0, 0.05);
 }
 
 /* ---------- Meio: portas e recursos ---------- */
-.inicio-meio { position: relative; background: linear-gradient(180deg, transparent 0, rgba(7, 6, 13, 0.82) 14rem, rgba(7, 6, 13, 0.88) 100%); }
+.inicio-meio { position: relative; background: linear-gradient(180deg, transparent 0, rgba(5, 4, 4, 0.82) 14rem, rgba(5, 4, 4, 0.88) 100%); }
 .inicio-portas { padding: 9rem var(--pad) 6rem; display: grid; gap: 4rem; }
 .portas-cabeca { display: grid; gap: 1rem; max-width: 60rem; }
 .portas-grade { display: grid; gap: 1.5rem; }
@@ -193,14 +207,14 @@ main { position: relative; z-index: 2; }
 .porta {
   position: relative; display: grid; gap: 1rem; padding: clamp(1.5rem, 3vw, 2.4rem); overflow: hidden;
   border: 1px solid var(--av-linha); border-radius: var(--av-raio-lg);
-  background: linear-gradient(160deg, rgba(242, 238, 251, 0.07), rgba(242, 238, 251, 0.015));
-  backdrop-filter: blur(12px);
+  /* Sem backdrop-filter: borrar uma área grande a cada quadro de scroll custava fps. O fundo opaco faz o mesmo papel. */
+  background: linear-gradient(160deg, rgba(30, 24, 20, 0.86), rgba(12, 9, 8, 0.82));
   transition: border-color 0.4s var(--av-ease), transform 0.5s var(--av-ease);
 }
 .porta:hover { border-color: var(--av-linha-forte); transform: translateY(-4px); }
 .porta-letra {
   position: absolute; right: -0.05em; top: -0.18em; font-family: var(--av-fonte-titan); font-weight: 800;
-  font-size: clamp(9rem, 20vw, 17rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(255, 165, 31, 0.28); pointer-events: none;
+  font-size: clamp(9rem, 20vw, 17rem); line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(255, 176, 0, 0.28); pointer-events: none;
 }
 .porta-titulo { position: relative; font-family: var(--av-fonte-display); font-weight: 600; font-size: clamp(1.9rem, 3.6vw, 3rem); line-height: 1.02; max-width: 16ch; text-wrap: balance; }
 .porta-passos { margin: 0; padding: 0; list-style: none; counter-reset: passo; display: grid; gap: 0.6rem; }
@@ -219,9 +233,9 @@ main { position: relative; z-index: 2; }
 .ini-marquee-faixa {
   display: flex; white-space: nowrap; width: max-content; will-change: transform;
   font-family: var(--av-fonte-titan); font-weight: 800; text-transform: uppercase; letter-spacing: -0.05em; line-height: 1;
-  font-size: clamp(3.4rem, 11vw, 9rem); color: transparent; -webkit-text-stroke: 1px rgba(242, 238, 251, 0.5);
+  font-size: clamp(3.4rem, 11vw, 9rem); color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
 }
-.ini-marquee-cheia { color: rgba(255, 165, 31, 0.9); -webkit-text-stroke: 0; font-size: clamp(2.2rem, 7vw, 5.5rem); }
+.ini-marquee-cheia { color: rgba(255, 176, 0, 0.9); -webkit-text-stroke: 0; font-size: clamp(2.2rem, 7vw, 5.5rem); }
 .recursos-cabeca { padding-inline: var(--pad); display: grid; gap: 1rem; }
 .recursos-lista { margin: 0; padding: 0 var(--pad); list-style: none; display: grid; }
 .recurso {
@@ -240,7 +254,9 @@ main { position: relative; z-index: 2; }
 /* ---------- Final: o sol que se põe atrás da chamada ---------- */
 .inicio-fim {
   position: relative; min-height: 100svh; display: grid; grid-template-rows: 1fr auto; padding: 7rem var(--pad) 1.6rem;
-  background: linear-gradient(180deg, rgba(7, 6, 13, 0.88) 0%, rgba(7, 6, 13, 0.1) 55%, rgba(7, 6, 13, 0.55) 100%);
+  background:
+    radial-gradient(75% 65% at 28% 48%, rgba(5, 4, 4, 0.55) 0%, rgba(5, 4, 4, 0.3) 55%, rgba(5, 4, 4, 0) 100%),
+    linear-gradient(180deg, rgba(5, 4, 4, 0.88) 0%, rgba(5, 4, 4, 0.1) 55%, rgba(5, 4, 4, 0.55) 100%);
 }
 .fim-conteudo { align-self: center; display: grid; gap: 2rem; }
 .fim-rodape { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.2rem; border-top: 1px solid var(--av-linha); }
@@ -250,7 +266,7 @@ main { position: relative; z-index: 2; }
 .inicio--estatico .inicio-historia { height: auto; display: grid; gap: 4rem; padding: 6rem 0 4rem; overflow: visible; }
 .inicio--estatico .hist-cena { position: relative; inset: auto; padding: 0 var(--pad); }
 .inicio--estatico .hist-numeros, .inicio--estatico .hist-trilho { display: none; }
-.inicio--estatico .inicio-historia::before { display: none; }
+.inicio--estatico .inicio-sombra { display: none; }
 .inicio--estatico .ini-marquee-faixa { transform: none !important; }
 .inicio--estatico .hist-onda span, .inicio--estatico .ini-brasa, .inicio--estatico .hero-rolar-ponto::after,
 .inicio--estatico .hist-estados li[data-vivo] { animation: none !important; }
@@ -258,5 +274,5 @@ main { position: relative; z-index: 2; }
   .hist-onda span, .ini-brasa, .hero-rolar-ponto::after, .hist-estados li[data-vivo] { animation: none !important; }
 }
 
-/* O ScrollTrigger (pin e scrub) não combina com rolagem suave nativa */
+/* O ScrollTrigger (pin e scrub) não combina com rolagem suave nativa (scroll-behavior) */
 html:has(.inicio) { scroll-behavior: auto; }

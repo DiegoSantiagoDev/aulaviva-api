@@ -8,14 +8,14 @@ const ROTULO_PAPEL = { ADMIN: 'Administrador', PROFESSOR: 'Professor', ALUNO: 'A
 
 /**
  * Moldura das áreas de uso. O menu mostra só o que o papel da sessão pode abrir;
- * visitante anônimo (aluno) vê a biblioteca e o botão de entrar.
+ * visitante anônimo (aluno) vê as aulas e o botão de entrar.
  */
 export default function LayoutApp({ children }: { children: ReactNode }) {
   const { rota, navegar } = useRoteador();
   const { sessao, sair } = useAuth();
 
   const itens = [
-    { rota: '/aulas', rotulo: 'Biblioteca', Icone: BookOpen, visivel: true },
+    { rota: '/aulas', rotulo: 'Aulas', Icone: BookOpen, visivel: true },
     { rota: '/professor', rotulo: 'Painel', Icone: GraduationCap, visivel: sessao?.papel === 'PROFESSOR' || sessao?.papel === 'ADMIN' },
     { rota: '/admin', rotulo: 'Administração', Icone: ShieldCheck, visivel: sessao?.papel === 'ADMIN' },
   ].filter((i) => i.visivel);

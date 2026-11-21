@@ -14,7 +14,7 @@ export default function Pagina404() {
         <h1 className="av-titulo mt-3">Página não encontrada</h1>
         <p className="av-lead mx-auto">
           O endereço que você tentou abrir não existe ou foi movido.
-          Volte ao início ou abra a biblioteca para encontrar sua aula.
+          Volte ao início ou abra as aulas para encontrar sua aula.
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full sm:w-auto">

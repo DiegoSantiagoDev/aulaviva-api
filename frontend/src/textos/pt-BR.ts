@@ -29,7 +29,7 @@ export const textos = {
     voltarApresentacao: 'Voltar à página inicial',
   },
   biblioteca: {
-    titulo: 'Biblioteca de Aulas',
+    titulo: 'Aulas',
     subtitulo: 'Conteúdo estruturado por inteligência artificial para você recuperar suas aulas.',
     buscarPlaceholder: 'Buscar por título ou matéria...',
     todasDisciplinas: 'Todas',

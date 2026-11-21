@@ -18,18 +18,20 @@
   gap: 0.9rem 1rem;
   align-items: center;
   padding: 1rem 1.1rem;
-  background: linear-gradient(180deg, rgba(242, 238, 251, 0.05), rgba(242, 238, 251, 0.02));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--av-linha);
   border-radius: var(--av-raio);
   transition: border-color 0.3s var(--av-ease), transform 0.3s var(--av-ease);
 }
-.av-adm-item:hover { border-color: var(--av-linha-forte); transform: translateY(-2px); }
+.av-adm-item:hover, .av-adm-item:focus-within { border-color: var(--av-linha-forte); transform: translateY(-2px); }
+.av-adm-item:focus-within { box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.25); }
+@media (prefers-reduced-motion: reduce) { .av-adm-item:hover, .av-adm-item:focus-within { transform: none; } }
 .av-adm-item[aria-busy='true'] { opacity: 0.7; }
 @media (min-width: 48rem) { .av-adm-item { grid-template-columns: auto minmax(0, 1fr) auto; } }
 .av-adm-avatar {
   display: grid; place-items: center; width: 2.9rem; height: 2.9rem; border-radius: 999px;
   font-family: var(--av-fonte-display); font-weight: 700; font-size: 1.35rem; color: #1a0d02;
-  background: radial-gradient(circle at 30% 25%, #ffe0a8, #ff8a2b 60%, #ff5b3a);
+  background: radial-gradient(circle at 30% 25%, #fff0a8, #ffd80c 55%, #ffa90f); /* mesmo ouro do sol */
 }
 .av-adm-dados { min-width: 0; display: grid; gap: 0.1rem; }
 .av-adm-nome { font-weight: 700; font-size: 1rem; }

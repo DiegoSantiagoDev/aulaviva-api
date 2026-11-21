@@ -196,7 +196,7 @@ export default function BibliotecaAulas() {
       <header className="av-topo">
         <EmblemaBoasVindas inView={true} className="av-emblema" />
         <div className="flex-1 min-w-0">
-          <h1 className="av-titulo">Biblioteca de aulas</h1>
+          <h1 className="av-titulo">Aulas</h1>
           <p className="av-lead">
             Aqui ficam as aulas com processamento concluído. Abra uma aula para estudar pelo resumo,
             pelos slides e pelas fotos do quadro.

@@ -39,8 +39,8 @@
 
   body {
     font-family: 'Manrope', system-ui, sans-serif;
-    background: #07060d;
-    color: #f2eefb;
+    background: #050404;
+    color: #ffffff;
     overflow-x: hidden;
   }
 
@@ -403,7 +403,7 @@
 
 /* Foco visível: âmbar claro, contraste alto sobre o vazio. */
 *:focus-visible {
-  outline: 2px solid var(--av-foco, #ffd08a);
+  outline: 2px solid var(--av-foco, #ffd84a);
   outline-offset: 2px;
 }
 

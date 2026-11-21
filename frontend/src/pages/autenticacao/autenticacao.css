@@ -3,17 +3,18 @@
   min-height: 100dvh;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  background:
-    radial-gradient(60% 55% at 15% 25%, rgba(255, 140, 40, 0.14), transparent 70%),
-    radial-gradient(55% 60% at 90% 90%, rgba(123, 108, 255, 0.18), transparent 70%),
-    var(--av-fundo);
+  position: relative;
+  isolation: isolate;
+  background: var(--av-fundo);
 }
+/* O céu ocupa a tela toda, por trás da cena e do formulário (fora do fluxo da grade) */
+.av-universo { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.av-aut-cena, .av-aut-painel { position: relative; z-index: 1; }
 @media (min-width: 62rem) {
   .av-aut { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); }
 }
 
 .av-aut-cena {
-  position: relative;
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: 1.5rem;
@@ -38,8 +39,8 @@
 }
 .av-aut-voltar:hover { color: var(--av-ouro-escuro); gap: 0.8rem; }
 
-.av-aut-nucleo { width: min(62vw, 22rem); justify-self: center; align-self: center; }
-@media (min-width: 62rem) { .av-aut-nucleo { width: min(34vw, 30rem); } }
+.av-aut-nucleo { width: min(62vw, 24rem); justify-self: center; align-self: center; }
+@media (min-width: 62rem) { .av-aut-nucleo { width: min(38vw, 32rem, 46dvh); } }
 
 .av-aut-texto { display: grid; gap: 0.7rem; }
 .av-aut-chamada {
@@ -62,12 +63,24 @@
   display: grid;
   gap: 1.1rem;
   padding: clamp(1.4rem, 3vw, 2.2rem);
-  background: linear-gradient(180deg, rgba(242, 238, 251, 0.05), rgba(242, 238, 251, 0.02));
-  border: 1px solid var(--av-linha);
+  position: relative;
+  /* Sem backdrop-filter: o céu atrás é um canvas animado e o blur seria refeito a cada quadro. */
+  background: linear-gradient(180deg, rgba(16, 12, 9, 0.9), rgba(9, 7, 5, 0.86));
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--av-raio-lg);
-  backdrop-filter: blur(14px);
-  box-shadow: var(--av-sombra-alta);
+  box-shadow: var(--av-sombra-alta), 0 0 80px -30px rgba(255, 140, 0, 0.35);
 }
+/* Borda de órbita: um fio de luz que dá a volta no cartão */
+@property --av-orbita { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.av-aut-cartao::before {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--av-orbita), transparent 0deg, rgba(255, 190, 70, 0.95) 28deg, rgba(255, 90, 30, 0.6) 55deg, transparent 90deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: avOrbita 7s linear infinite;
+}
+@keyframes avOrbita { to { --av-orbita: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .av-aut-cartao::before { animation: none; } }
 .av-aut-titulo {
   font-family: var(--av-fonte-titan);
   font-weight: 800;
@@ -85,7 +98,7 @@
 .av-aut-sucesso { display: grid; gap: 1.1rem; }
 .av-aut-sucesso-icone {
   display: inline-grid; place-items: center; width: 3.4rem; height: 3.4rem; border-radius: 999px;
-  color: var(--av-salvia-escuro); background: var(--av-sucesso-suave); box-shadow: 0 0 40px -6px rgba(79, 214, 160, 0.5);
+  color: var(--av-salvia-escuro); background: var(--av-sucesso-suave); box-shadow: 0 0 40px -6px rgba(37, 224, 143, 0.5);
 }
 
 .av-entrada-grupo { position: relative; }
@@ -101,7 +114,7 @@
   color: var(--av-ouro-escuro);
   font-weight: 700;
   text-decoration: underline;
-  text-decoration-color: rgba(255, 165, 31, 0.4);
+  text-decoration-color: rgba(255, 176, 0, 0.4);
   text-underline-offset: 3px;
   transition: text-decoration-color 0.25s var(--av-ease), color 0.25s var(--av-ease);
 }
@@ -116,5 +129,40 @@
 .av-aviso svg { flex-shrink: 0; margin-top: 0.15rem; }
 .av-aviso-erro { color: var(--av-erro); background: var(--av-erro-suave); border-color: rgba(255, 130, 114, 0.35); }
 .av-aviso-atencao { color: var(--av-aviso); background: var(--av-aviso-suave); border-color: rgba(255, 189, 92, 0.35); }
-.av-aviso-info { color: var(--av-violeta-claro); background: var(--av-destaque-suave); border-color: rgba(123, 108, 255, 0.35); }
-.av-aviso-ok { color: var(--av-sucesso); background: var(--av-sucesso-suave); border-color: rgba(79, 214, 160, 0.35); }
+.av-aviso-info { color: var(--av-violeta-claro); background: var(--av-destaque-suave); border-color: rgba(109, 91, 255, 0.35); }
+.av-aviso-ok { color: var(--av-sucesso); background: var(--av-sucesso-suave); border-color: rgba(37, 224, 143, 0.35); }
+
+/* ---------- Telas baixas: o texto da esquerda nunca é cortado ---------- */
+/* Em vez de ficar preso a 100dvh com overflow oculto, o painel cresce com o conteúdo e o sol encolhe. */
+@media (min-width: 62rem) {
+  .av-aut-cena { overflow: visible; min-height: 100dvh; }
+  .av-aut-nucleo { width: min(38vw, 32rem, 38dvh); }
+}
+@media (min-width: 62rem) and (max-height: 700px) {
+  .av-aut-cena { padding-block: 1.4rem 1.6rem; gap: 0.8rem; }
+  .av-aut-nucleo { width: min(30vw, 14rem, 28dvh); }
+  .av-aut-chamada { font-size: clamp(1.4rem, 2.6vw, 1.9rem); }
+  .av-aut-texto { gap: 0.4rem; }
+}
+@media (min-width: 62rem) and (max-height: 520px) {
+  .av-aut-nucleo { display: none; }
+  .av-aut-cena { grid-template-rows: auto 1fr; align-content: start; }
+}
+@media (min-width: 62rem) and (max-height: 700px) {
+  .av-aut-painel { padding-block: 1.4rem; }
+  .av-aut-cartao { gap: 0.8rem; }
+}
+
+/* ---------- Aprovação pendente: etapas do cadastro ---------- */
+.av-aut-etapas { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.55rem; }
+.av-aut-etapas li {
+  display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem; border-radius: var(--av-raio-sm);
+  border: 1px solid var(--av-linha); font-size: 0.92rem; color: var(--av-texto-suave);
+}
+.av-aut-etapas li[data-estado='feito'] { color: var(--av-sucesso); border-color: rgba(61, 240, 160, 0.3); background: var(--av-sucesso-suave); }
+.av-aut-etapas li[data-estado='agora'] {
+  color: #1a0d02; font-weight: 700; border-color: var(--av-ouro); background: linear-gradient(135deg, #ffd84a, #ffc400);
+  animation: avPendente 2.4s ease-in-out infinite;
+}
+@keyframes avPendente { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 196, 0, 0.45); } 50% { box-shadow: 0 0 0 8px rgba(255, 196, 0, 0); } }
+@media (prefers-reduced-motion: reduce) { .av-aut-etapas li[data-estado='agora'] { animation: none; } }
