@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { BookOpen, GraduationCap, LogIn, LogOut, ShieldCheck } from 'lucide-react';
 import { useRoteador } from './Roteador.tsx';
 import { useAuth } from '../auth/AuthContext.tsx';
+import UniversoEstelar from '../components/ui/UniversoEstelar.tsx';
 import './layout.css';
 
 const ROTULO_PAPEL = { ADMIN: 'Administrador', PROFESSOR: 'Professor', ALUNO: 'Aluno' } as const;
@@ -26,7 +27,8 @@ export default function LayoutApp({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="av-app paper-grain">
+    <div className="av-app">
+      <UniversoEstelar variante="app" />
       <a href="#conteudo" className="av-pular" onClick={(e) => { e.preventDefault(); document.getElementById('conteudo')?.focus(); }}>
         Pular para o conteúdo
       </a>

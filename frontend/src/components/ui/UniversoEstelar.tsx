@@ -67,7 +67,11 @@ function criarAsteroide(w: number, h: number, espalhar: boolean): Asteroide {
   };
 }
 
-export default function UniversoEstelar() {
+/**
+ * variante "auth": céu cheio (login e cadastro). Variante "app": céu calmo para as telas de uso (aulas, painéis):
+ * menos estrelas, poucos asteroides, estrela cadente rara e 30 fps, para não competir com o conteúdo nem gastar CPU.
+ */
+export default function UniversoEstelar({ variante = 'auth' }: { variante?: 'auth' | 'app' }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -77,6 +81,7 @@ export default function UniversoEstelar() {
 
     const reduzido = prefereMovimentoReduzido();
     const modesto = dispositivoModesto();
+    const calmo = variante === 'app';
     let w = 0;
     let h = 0;
     let dpr = 1;
@@ -84,7 +89,7 @@ export default function UniversoEstelar() {
     let poeira: Poeira[] = [];
     let asteroides: Asteroide[] = [];
     const cadentes: Cadente[] = [];
-    let proxCadente = aleatorio(1.2, 3);
+    let proxCadente = calmo ? aleatorio(5, 10) : aleatorio(1.2, 3);
     let alvoX = 0;
     let alvoY = 0;
     let px = 0;
@@ -94,7 +99,7 @@ export default function UniversoEstelar() {
     let tempo = 0;
 
     const montar = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, modesto ? 1.25 : 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, calmo ? 1 : modesto ? 1.25 : 1.5);
       w = canvas.clientWidth;
       h = canvas.clientHeight;
       canvas.width = Math.round(w * dpr);
@@ -102,7 +107,7 @@ export default function UniversoEstelar() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const area = w * h;
-      const qEstrelas = Math.min(modesto ? 150 : 280, Math.round(area / 5500));
+      const qEstrelas = calmo ? Math.min(150, Math.round(area / 9000)) : Math.min(modesto ? 150 : 280, Math.round(area / 5500));
       estrelas = Array.from({ length: qEstrelas }, () => {
         const z = aleatorio(0.2, 1);
         return {
@@ -115,7 +120,7 @@ export default function UniversoEstelar() {
           cor: CORES_ESTRELA[Math.floor(Math.random() * CORES_ESTRELA.length)],
         };
       });
-      poeira = Array.from({ length: modesto ? 50 : 110 }, () => ({
+      poeira = Array.from({ length: calmo ? 40 : modesto ? 50 : 110 }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
         vx: aleatorio(-6, 10),
@@ -123,7 +128,7 @@ export default function UniversoEstelar() {
         r: aleatorio(0.5, 1.5),
         fase: Math.random() * Math.PI * 2,
       }));
-      const qAst = Math.min(modesto ? 4 : 8, Math.max(3, Math.round(area / 150000)));
+      const qAst = calmo ? 2 : Math.min(modesto ? 4 : 8, Math.max(3, Math.round(area / 150000)));
       asteroides = Array.from({ length: qAst }, () => criarAsteroide(w, h, true));
     };
 
@@ -171,7 +176,7 @@ export default function UniversoEstelar() {
     const quadro = (agora: number) => {
       raf = requestAnimationFrame(quadro);
       const dt = Math.min(0.05, (agora - ultimo) / 1000 || 0.016);
-      if (modesto && agora - ultimo < 30) return;
+      if ((modesto || calmo) && agora - ultimo < 30) return;
       ultimo = agora;
       tempo += dt;
       px += (alvoX - px) * Math.min(1, dt * 2.5);
@@ -212,7 +217,7 @@ export default function UniversoEstelar() {
           total: aleatorio(0.7, 1.2),
           comp: aleatorio(110, 220),
         });
-        proxCadente = aleatorio(2.4, 6);
+        proxCadente = calmo ? aleatorio(9, 18) : aleatorio(2.4, 6);
       }
       for (let i = cadentes.length - 1; i >= 0; i--) {
         const c = cadentes[i];
@@ -313,7 +318,7 @@ export default function UniversoEstelar() {
       window.removeEventListener('pointermove', aoMover);
       document.removeEventListener('visibilitychange', aoMudarAba);
     };
-  }, []);
+  }, [variante]);
 
   return <canvas ref={ref} className="av-universo" aria-hidden="true" />;
 }

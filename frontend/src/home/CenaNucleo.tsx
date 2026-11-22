@@ -1,9 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Environment, Lightformer, MeshDistortMaterial, PerformanceMonitor } from '@react-three/drei';
+import { Environment, Lightformer, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { gsap } from '../animacoes/motor.ts';
 import { calcularAlvo, estadoCena, type AlvoNucleo } from './estadoCena.ts';
+import { dadosCena, placarAtivo, registrarFrameCena } from '../lib/medidorFps.ts';
+import {
+  NIVEL_MAXIMO,
+  PERFIS,
+  amostrarQuadro,
+  faseDensa,
+  lerInicioQualidade,
+  nivelPorGpu,
+  nomeDaGpu,
+  novoControle,
+  salvarQualidade,
+  type EstadoControle,
+  type InicioQualidade,
+  type PerfilQualidade,
+} from '../lib/qualidade.ts';
 import {
   ESCALA_SPRITE_SOL,
   PLANETAS,
@@ -184,12 +199,17 @@ const VERT_ENXAME = /* glsl */ `
   uniform float uTR;
   uniform float uScale;
   uniform float uSize;
+  uniform float uEG;
+  uniform float uRS;
+  uniform float uCob;
+  uniform float uN;
   attribute vec3 aDir;
   attribute vec4 aRand;
   attribute vec3 aTgt;
   attribute vec3 aCol;
   varying vec3 vCol;
   varying float vBrilho;
+  varying float vReforco;
 
   float easeOut(float x) { return 1.0 - pow(1.0 - x, 3.0); }
   float easeInOut(float x) { return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0; }
@@ -216,7 +236,14 @@ const VERT_ENXAME = /* glsl */ `
     vec4 mv = modelViewMatrix * vec4(q, 1.0);
     gl_Position = projectionMatrix * mv;
     float tam = uSize * (0.65 + aRand.x * 0.7) * mix(1.0, 0.62, ex * (1.0 - g)) * (1.0 + g * 1.5);
-    gl_PointSize = clamp(tam * uScale / -mv.z, 1.0, 34.0);
+    // Teto de tamanho pela densidade: estima o raio da nuvem (sol -> espalhado -> esfera da gosma) e limita o
+    // ponto para que a cobertura nunca passe de uCob camadas por pixel. Onde as particulas estao espalhadas
+    // o teto nao age (visual igual); quando se juntam na esfera, evita dezenas de camadas de blend inutil.
+    float rNuvem = mix(mix(uRS, uRS + 2.2, ex), uTR, g);
+    float teto = 2.0 * rNuvem * uEG * sqrt(uCob / max(uN, 1.0));
+    float tamFinal = max(min(tam, teto), 0.0001);
+    vReforco = clamp(sqrt(tam / tamFinal), 1.0, 1.7);
+    gl_PointSize = clamp(tamFinal * uScale / -mv.z, 1.0, 34.0);
     vCol = aCol;
     vBrilho = ex * (1.0 - g);
   }
@@ -226,10 +253,12 @@ const FRAG_ENXAME = /* glsl */ `
   uniform float uAlpha;
   varying vec3 vCol;
   varying float vBrilho;
+  varying float vReforco;
 
   void main() {
     float d = length(gl_PointCoord - 0.5);
-    float a = smoothstep(0.5, 0.1, d) * uAlpha;
+    // vReforco compensa o ponto menor (teto de tamanho) com mais opacidade: o conjunto continua solido.
+    float a = min(1.0, smoothstep(0.5, 0.1, d) * vReforco) * uAlpha;
     if (a < 0.01) discard;
     // Alfa pré-multiplicado: no sol (brilho 0) as partículas se fundem como um disco sólido;
     // soltas no espaço (brilho 1) passam a somar luz, como brasas.
@@ -297,6 +326,10 @@ function criarEnxame(n: number): THREE.Points {
       uScale: { value: 600 },
       uSize: { value: 0.085 },
       uAlpha: { value: 0 },
+      uEG: { value: 1 },
+      uRS: { value: RAIO_SOL },
+      uCob: { value: 9 },
+      uN: { value: n },
     },
     vertexShader: VERT_ENXAME,
     fragmentShader: FRAG_ENXAME,
@@ -328,7 +361,7 @@ function criarEnxame(n: number): THREE.Points {
  *  0,70–0,97  JUNÇÃO: as partículas se juntam, em ondas, na superfície da gosma.
  *  0,93–1,00  a gosma 3D (Cena) condensa sobre as partículas e assume.
  */
-function Sol({ particulas }: { particulas: number }) {
+function Sol({ particulas, perfil }: { particulas: number; perfil: PerfilQualidade }) {
   const grupo = useRef<THREE.Group>(null);
   const sprites = useRef<Array<THREE.Sprite | null>>([]);
   const solRef = useRef<THREE.Sprite>(null);
@@ -368,6 +401,11 @@ function Sol({ particulas }: { particulas: number }) {
   );
   const orbitas = useMemo(() => PLANETAS.map(calcularOrbita), []);
   const enxame = useMemo(() => criarEnxame(particulas), [particulas]);
+  const perfilRef = useRef(perfil);
+  const desenhadas = useRef(particulas);
+  useEffect(() => {
+    perfilRef.current = perfil;
+  }, [perfil]);
 
   useEffect(
     () => () => {
@@ -467,6 +505,16 @@ function Sol({ particulas }: { particulas: number }) {
     u.uT.value = t;
     u.uAlpha.value = alfa;
     u.uSize.value = 0.085 * escalaGrupo;
+    // Qualidade adaptativa: quantas partículas são desenhadas e a cobertura máxima nas fases densas.
+    const q = perfilRef.current;
+    const quantas = Math.max(1, Math.round(particulas * q.fracao));
+    if (quantas !== desenhadas.current) {
+      desenhadas.current = quantas;
+      enxame.geometry.setDrawRange(0, quantas);
+    }
+    u.uN.value = quantas;
+    u.uCob.value = q.cobertura;
+    u.uEG.value = escalaGrupo;
     // pixels por unidade de cena à distância 1 (fov 36°): tamanho do ponto = tamanho_mundo * uScale / profundidade
     u.uScale.value = (tamanho.height * state.viewport.dpr) / (2 * Math.tan(THREE.MathUtils.degToRad(18)));
     // raio da gosma (em unidades locais do grupo) para onde as partículas convergem
@@ -500,7 +548,7 @@ function Sol({ particulas }: { particulas: number }) {
   );
 }
 
-function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
+function Cena({ detalhe, leve, perfil }: { detalhe: number; leve: boolean; perfil: PerfilQualidade }) {
   const materiaisPainel = useRef<THREE.LineBasicMaterial[]>([]);
   const grupo = useRef<THREE.Group>(null);
   const nucleo = useRef<THREE.Mesh>(null);
@@ -511,6 +559,8 @@ function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
   const giro = useRef(0);
   const energia = useRef(0);
   const anterior = useRef(0);
+  // Forma da gosma já suavizada (inércia): escala não uniforme e distorção.
+  const forma = useRef({ sx: 1, sy: 1, sz: 1, distort: 0.4 });
   const cor = useMemo(() => new THREE.Color(), []);
   const viewport = useThree((s) => s.viewport);
 
@@ -522,10 +572,18 @@ function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
     const t = state.clock.elapsedTime;
 
     // Energia do scroll: quanto mais rápido se rola, mais a gosma se agita (e acalma sozinha depois).
+    // Tudo aqui usa `dt` (segundos, limitado), então o movimento não depende da taxa de quadros nem dá
+    // salto depois de um engasgo. A agitação sobe devagar (~1 s) e volta ao repouso mais devagar ainda
+    // (~2 s): a gosma tem inércia, como a água. Saltos de scroll (link para uma seção, recarregar,
+    // voltar ao topo de uma vez) não contam como velocidade.
+    const dt = Math.min(Math.max(delta, 1 / 240), 0.1);
     const total = e.hero + e.historia + e.meio + e.fim;
-    const velocidade = Math.abs(total - anterior.current) / Math.max(delta, 1 / 120);
+    const salto = Math.abs(total - anterior.current);
     anterior.current = total;
-    energia.current += (Math.min(1, velocidade * 0.7) - energia.current) * (1 - Math.exp(-5 * Math.min(delta, 0.05)));
+    const velocidade = salto > 0.12 ? 0 : salto / dt;
+    const entrada = Math.min(1, velocidade * 0.45);
+    const tauEnergia = entrada > energia.current ? 1.0 : 2.0;
+    energia.current += (entrada - energia.current) * (1 - Math.exp(-dt / tauEnergia));
     const en = energia.current;
 
     // ---- A gosma: condensa sobre as partículas no fim da junção e assume ----
@@ -542,19 +600,22 @@ function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
     const malha = nucleo.current;
     if (malha) {
       // Rotação acumulada (integra a velocidade) para não dar saltos quando a velocidade muda com o scroll.
-      giro.current += delta * (0.2 + e.historia * 0.25 + en * 1.1);
+      giro.current += dt * (0.09 + e.historia * 0.12 + en * 0.3);
       malha.rotation.y = giro.current;
-      malha.rotation.x = Math.sin(t * 0.43) * 0.28;
-      malha.rotation.z = Math.sin(t * 0.31 + 1.2) * 0.2;
+      malha.rotation.x = Math.sin(t * 0.26) * 0.28;
+      malha.rotation.z = Math.sin(t * 0.19 + 1.2) * 0.2;
 
       // Forma que muda a cada cena da história (redonda → esticada → achatada), além do "respirar" contínuo.
       const cena2 = suave(e.historia, 0.26, 0.34) * (1 - suave(e.historia, 0.6, 0.68));
       const cena3 = suave(e.historia, 0.6, 0.68);
-      malha.scale.set(
-        1 + 0.17 * cena2 - 0.09 * cena3 + 0.045 * Math.sin(t * 1.1) + en * 0.08,
-        1 - 0.13 * cena2 + 0.15 * cena3 + 0.05 * Math.sin(t * 1.3 + 1.3) - en * 0.05,
-        1 + 0.05 * Math.sin(t * 0.9 + 2.1)
-      );
+      // Os alvos (respiração de vários segundos, cena da história, agitação do scroll) são seguidos com
+      // constante de tempo de ~1,4 s. Enquanto a gosma está oculta a forma já nasce no alvo (sem rampa).
+      const f = forma.current;
+      const kForma = solida > 0.003 ? 1 - Math.exp(-dt / 1.4) : 1;
+      f.sx += (1 + 0.17 * cena2 - 0.09 * cena3 + 0.045 * Math.sin(t * 0.6) + en * 0.05 - f.sx) * kForma;
+      f.sy += (1 - 0.13 * cena2 + 0.15 * cena3 + 0.05 * Math.sin(t * 0.5 + 1.3) - en * 0.03 - f.sy) * kForma;
+      f.sz += (1 + 0.05 * Math.sin(t * 0.42 + 2.1) - f.sz) * kForma;
+      malha.scale.set(f.sx, f.sy, f.sz);
 
       const material = malha.material as THREE.MeshPhysicalMaterial & { distort?: number };
       // Mesma cor do sol (miolo #ffc400), só um leve calor na história e no final. O brilho próprio é pequeno,
@@ -565,7 +626,9 @@ function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
       material.emissiveIntensity = 0.36 + mistura * 0.04 + en * 0.1;
       material.opacity = solida;
       // Distorção viva: base + respiração + cena da história + energia do scroll. Começa lisa no instante da troca.
-      material.distort = Math.min(0.72, formacao * (0.4 + 0.1 * Math.sin(t * 0.9) + e.historia * 0.16 + e.fim * 0.1 + en * 0.3));
+      const alvoDistort = 0.4 + 0.1 * Math.sin(t * 0.32) + e.historia * 0.16 + e.fim * 0.1 + en * 0.1;
+      f.distort += (alvoDistort - f.distort) * kForma;
+      material.distort = Math.min(0.72, formacao * f.distort);
     }
     if (luzQuente.current) luzQuente.current.intensity = 22 + mistura * 10 + e.fim * 6 + en * 12;
     if (luzFria.current) luzFria.current.intensity = 14 - mistura * 5;
@@ -605,7 +668,7 @@ function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
         <Lightformer form="rect" intensity={3} color="#ffd84a" position={[5, -2, 3]} scale={[1.1, 6, 1]} />
       </Environment>
 
-      <Sol particulas={leve ? 4200 : 9500} />
+      <Sol particulas={leve ? 4200 : 9500} perfil={perfil} />
 
       {/* A gosma, sem órbitas: só o corpo distorcido */}
       <group ref={grupo} visible={false}>
@@ -616,7 +679,7 @@ function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
             emissive="#ffc400"
             emissiveIntensity={0.36}
             distort={0}
-            speed={1.7}
+            speed={0.65}
             roughness={0.3}
             metalness={0.05}
             clearcoat={1}
@@ -641,7 +704,7 @@ function Cena({ detalhe, leve }: { detalhe: number; leve: boolean }) {
  * Dono do relógio de desenho. O Canvas roda em frameloop "demand" e este componente pede um quadro por
  * tick do gsap.ticker (o mesmo relógio que alimenta o ScrollTrigger e a suavização da cena), então o
  * desenho acompanha o scroll sem um segundo laço de rAF. Sem limite fixo de fps: só passa para 30 fps
- * se o PerformanceMonitor medir queda persistente, já com a resolução no mínimo (`limitar30`).
+ * se o monitor de qualidade medir queda persistente, já com a resolução no mínimo (`limitar30`).
  * Telas de 120 Hz ou mais são limitadas a ~75 quadros por segundo para poupar GPU.
  */
 function Relogio({ ativa, limitar30 }: { ativa: boolean; limitar30: boolean }) {
@@ -670,24 +733,129 @@ function Relogio({ ativa, limitar30 }: { ativa: boolean; limitar30: boolean }) {
   return null;
 }
 
-export default function CenaNucleo({ leve, ativa, onPronta, onFalha }: CenaNucleoProps) {
-  const dprMaximo = Math.min(typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1, leve ? 1.5 : DPR_MAXIMO);
-  const [dpr, setDpr] = useState(dprMaximo);
-  // Economia adaptativa: só liga se o fps medido cair; por padrão a cena roda no máximo da qualidade.
-  const [economia, setEconomia] = useState(false);
+/**
+ * Aquecimento: a gosma, o enxame, o clarão e o anel ficam invisíveis até o ponto da rolagem em que entram.
+ * Objeto invisível não é compilado nem enviado à GPU, então o primeiro frame em que ele aparece pagava, de
+ * uma vez, a compilação dos shaders (a gosma é um material físico com clearcoat, luzes e env map), o PMREM
+ * do Environment e o upload de geometria e texturas. Era o engasgo da junção e do começo da explosão.
+ * Aqui tudo isso é feito logo depois do carregamento: primeiro `compileAsync` (os shaders compilam em
+ * paralelo, sem travar a thread principal) e depois UM render com tudo visível, no mesmo quadro em que o
+ * render normal reescreve a tela (só o último é exibido), e a visibilidade original é restaurada.
+ */
+function Aquecimento() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  const etapa = useRef<'espera' | 'compilando' | 'pronta' | 'feita'>('espera');
+  const quadros = useRef(0);
 
-  // Malha lisa por padrão; mais simples só em celular ou depois de queda de fps persistente.
-  const detalhe = leve || economia ? 24 : 44;
+  useFrame(() => {
+    if (etapa.current === 'feita' || etapa.current === 'compilando') return;
+    if (etapa.current === 'espera') {
+      // Espera alguns quadros: o Environment desenha o cubemap no primeiro e o PMREM precisa dele pronto.
+      quadros.current += 1;
+      if (quadros.current < 3) return;
+      etapa.current = 'compilando';
+      const pronta = () => {
+        etapa.current = 'pronta';
+      };
+      gl.compileAsync(scene, camera).then(pronta, pronta);
+      return;
+    }
+    etapa.current = 'feita';
+    const ocultos: THREE.Object3D[] = [];
+    scene.traverse((o) => {
+      if (!o.visible) {
+        o.visible = true;
+        ocultos.push(o);
+      }
+    });
+    try {
+      gl.render(scene, camera);
+    } finally {
+      for (const o of ocultos) o.visible = false;
+    }
+  });
+
+  return null;
+}
+
+/**
+ * Mede o tempo real dos quadros e ajusta o nível de qualidade em degraus (ver lib/qualidade.ts).
+ * Também alimenta o placar `?fps=1` (só quando ligado).
+ */
+function MonitorQualidade({
+  nivel,
+  inicio,
+  aoMudar,
+}: {
+  nivel: number;
+  inicio: InicioQualidade;
+  aoMudar: (nivel: number) => void;
+}) {
+  const controle = useRef<EstadoControle>(novoControle(inicio.piso));
+  const nivelAtual = useRef(nivel);
+  const ultimo = useRef(0);
+
+  useEffect(() => {
+    nivelAtual.current = nivel;
+  }, [nivel]);
+
+  useFrame((state, delta) => {
+    const h = estadoCena.hero;
+    if (placarAtivo) {
+      const agora = performance.now();
+      if (ultimo.current > 0) registrarFrameCena(agora - ultimo.current, h);
+      ultimo.current = agora;
+      const info = state.gl.info.render;
+      dadosCena.chamadas = info.calls;
+      dadosCena.pontos = info.points;
+      dadosCena.triangulos = info.triangles;
+      dadosCena.dpr = state.viewport.dpr;
+      dadosCena.largura = state.gl.domElement.width;
+      dadosCena.altura = state.gl.domElement.height;
+      dadosCena.nivel = nivelAtual.current;
+    }
+    if (inicio.fixo) return;
+    const novo = amostrarQuadro(controle.current, nivelAtual.current, delta, faseDensa(h));
+    if (novo !== null) {
+      nivelAtual.current = novo;
+      salvarQualidade(novo, controle.current.piso);
+      aoMudar(novo);
+    }
+  });
+
+  return null;
+}
+
+export default function CenaNucleo({ leve, ativa, onPronta, onFalha }: CenaNucleoProps) {
+  // Qualidade em degraus (lib/qualidade.ts): parte do último nível aprendido, do tipo de GPU ou de ?q=N, e a
+  // medição do fps desce (ou sobe) um nível por vez. Em máquina boa fica no nível 0 e nada muda.
+  const inicio = useMemo(() => lerInicioQualidade(), []);
+  const [nivel, setNivel] = useState(inicio.nivel);
+  const perfil = PERFIS[Math.min(Math.max(nivel, 0), NIVEL_MAXIMO)];
+  const dispositivo = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
+  const dpr = Math.min(dispositivo, leve ? 1.5 : DPR_MAXIMO, perfil.dprMax);
+
+  // Malha lisa por padrão; mais simples só em celular ou nos níveis baixos.
+  const detalhe = leve || perfil.malhaSimples ? 24 : 44;
 
   return (
     <Canvas
       dpr={dpr}
       camera={{ position: [0, 0, 7], fov: 36, near: 0.1, far: 60 }}
-      gl={{ antialias: !leve, alpha: true, powerPreference: 'high-performance' }}
+      // Com pixel ratio 1,5 ou mais o serrilhado não aparece, e o MSAA multiplicaria a banda de cada blend das partículas.
+      gl={{ antialias: !leve && dispositivo < 1.5, alpha: true, powerPreference: 'high-performance' }}
       frameloop="demand"
       style={{ pointerEvents: 'none' }}
       onCreated={({ gl }) => {
         gl.setClearColor(0x000000, 0);
+        const gpu = nomeDaGpu(gl.getContext());
+        dadosCena.gpu = gpu;
+        if (!inicio.fixo) {
+          const minimo = nivelPorGpu(gpu);
+          if (minimo > 0) setNivel((n) => Math.max(n, minimo));
+        }
         gl.domElement.addEventListener('webglcontextlost', (ev) => {
           ev.preventDefault();
           onFalha();
@@ -695,17 +863,10 @@ export default function CenaNucleo({ leve, ativa, onPronta, onFalha }: CenaNucle
         onPronta();
       }}
     >
-      {/* Mede o fps real: abaixo de ~50 baixa a resolução; se ainda assim não der, passa a 30 fps e simplifica a malha. */}
-      <PerformanceMonitor
-        factor={1}
-        onChange={({ factor }) => {
-          setDpr(Math.max(1, 1 + (dprMaximo - 1) * factor));
-          if (factor <= 0.02) setEconomia(true);
-          else if (factor >= 0.6) setEconomia(false);
-        }}
-      />
-      <Relogio ativa={ativa} limitar30={economia} />
-      <Cena detalhe={detalhe} leve={leve} />
+      <Relogio ativa={ativa} limitar30={perfil.limitar30} />
+      <MonitorQualidade nivel={nivel} inicio={inicio} aoMudar={setNivel} />
+      <Cena detalhe={detalhe} leve={leve} perfil={perfil} />
+      <Aquecimento />
     </Canvas>
   );
 }

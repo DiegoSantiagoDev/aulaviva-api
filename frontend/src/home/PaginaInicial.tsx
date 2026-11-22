@@ -77,7 +77,7 @@ export default function PaginaInicial() {
       // Depois de cada recálculo (carregamento, resize) a cena assume o ponto atual sem "viajar" desde o zero.
       ScrollTrigger.addEventListener('refresh', sincronizarCena);
       limpar.push(() => ScrollTrigger.removeEventListener('refresh', sincronizarCena));
-      limpar.push(iniciarMedidorFps());
+      limpar.push(iniciarMedidorFps(() => estadoCena.hero));
 
       /* ---------- Abertura: título revelado linha a linha + palco que acende ---------- */
       const abertura = gsap.timeline({ defaults: { ease: EASE.acender } });
@@ -102,14 +102,31 @@ export default function PaginaInicial() {
       const definirOpacidade = gsap.quickSetter('.inicio-palco', 'opacity');
       const definirSombra = gsap.quickSetter('.inicio-sombra', 'opacity');
       let definirLuz: ((v: number) => void) | null = null;
+      // Só escreve no DOM quando o valor muda: o scroll chama isto várias vezes por quadro.
+      let ultimoPalco = -1;
+      let ultimaSombra = -1;
+      let ultimaLuz = -1;
       const aplicarPalco = () => {
         // Recua durante "portas" e "recursos" para dar lugar ao texto e volta no final.
-        definirOpacidade(1 - 0.62 * brutoCena.meio * (1 - brutoCena.fim));
+        const palco = 1 - 0.62 * brutoCena.meio * (1 - brutoCena.fim);
+        if (palco !== ultimoPalco) {
+          ultimoPalco = palco;
+          definirOpacidade(palco);
+        }
         // Sombra de leitura da "história": camada fixa que entra no fim da transição e sai por opacidade,
         // então não existe borda de seção para aparecer como uma linha na tela.
-        definirSombra(rampa(brutoCena.hero, 0.7, 1) * (1 - Math.min(1, brutoCena.meio * 1.4)));
+        const sombra = rampa(brutoCena.hero, 0.7, 1) * (1 - Math.min(1, brutoCena.meio * 1.4));
+        if (sombra !== ultimaSombra) {
+          ultimaSombra = sombra;
+          definirSombra(sombra);
+        }
         // O halo do cursor só existe enquanto o núcleo está livre, no topo da página.
-        definirLuz?.(1 - Math.min(1, brutoCena.hero * 12));
+        const luz = 1 - Math.min(1, brutoCena.hero * 12);
+        const aplicarLuz = definirLuz;
+        if (aplicarLuz && luz !== ultimaLuz) {
+          ultimaLuz = luz;
+          aplicarLuz(luz);
+        }
       };
 
       // Ordem importa: os gatilhos são criados na ordem em que aparecem na página,
@@ -117,13 +134,26 @@ export default function PaginaInicial() {
       /* ---------- Transição sol → gosma: o hero fica fixado por ~2,8 telas de rolagem ----------
          A cena (CenaNucleo) conduz o olhar em fases: planetas em espiral → clarão → o disco "incha" em esfera 3D
          → a distorção sobe até a gosma. Tudo é função de brutoCena.hero, então rolar para cima desfaz a transição. */
+      // Elementos resolvidos uma vez (antes, um seletor de texto era consultado a cada tick de scroll) e escrita
+      // no DOM só quando o valor muda: depois do início da transição o texto já saiu e nada mais é escrito.
+      const conteudoHero = gsap.utils.toArray<HTMLElement>('.hero-conteudo');
+      const rodapeHero = gsap.utils.toArray<HTMLElement>('.hero-rodape');
+      let ultimoSai = -1;
+      let ultimoRodape = -1;
       const aplicarHero = (self: ScrollTrigger) => {
         brutoCena.hero = self.progress;
         // O texto, os botões e o indicador "Role" saem logo no início da transição, presos ao mesmo progresso
         // (antes eram ScrollTriggers separados que não disparavam com o hero fixado e ficavam na frente da cena).
         const sai = rampa(self.progress, 0, 0.12);
-        gsap.set('.hero-conteudo', { opacity: 1 - sai, yPercent: -14 * sai, pointerEvents: sai > 0.9 ? 'none' : 'auto' });
-        gsap.set('.hero-rodape', { opacity: 1 - rampa(self.progress, 0, 0.03) });
+        if (sai !== ultimoSai) {
+          ultimoSai = sai;
+          gsap.set(conteudoHero, { opacity: 1 - sai, yPercent: -14 * sai, pointerEvents: sai > 0.9 ? 'none' : 'auto' });
+        }
+        const rodape = 1 - rampa(self.progress, 0, 0.03);
+        if (rodape !== ultimoRodape) {
+          ultimoRodape = rodape;
+          gsap.set(rodapeHero, { opacity: rodape });
+        }
         aplicarPalco();
       };
 
