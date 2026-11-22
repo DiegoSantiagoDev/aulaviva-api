@@ -75,7 +75,7 @@ export default function SecaoHistoria() {
             </LinhaMascara>
           </h2>
           <p className="ini-texto hist-fade">
-            Até três fotos do quadro acompanham cada aula. Quando tudo está pronto, a aula acende na biblioteca — e só
+            Até três fotos do quadro acompanham cada aula. Quando tudo está pronto, a aula acende para a turma — e só
             então aparece para os alunos.
           </p>
           <div className="hist-quadros hist-fade" aria-hidden="true">

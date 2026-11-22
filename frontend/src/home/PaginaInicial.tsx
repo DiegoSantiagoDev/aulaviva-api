@@ -5,9 +5,20 @@ import { useAuth } from '../auth/AuthContext.tsx';
 import { gsap, ScrollTrigger, useGSAP } from '../animacoes/motor.ts';
 import { DURACAO, EASE, dispositivoModesto, temPonteiroFino, webglDisponivel } from '../animacoes/movimento.ts';
 import { useMovimentoReduzido } from '../animacoes/useMovimentoReduzido.ts';
-import NucleoCSS from '../components/ui/NucleoCSS.tsx';
+import SolCanvas from '../components/ui/SolCanvas.tsx';
 import CenaFundo from './CenaFundo.tsx';
-import { calcularAlvo, estadoCena } from './estadoCena.ts';
+import {
+  SUAVIZACAO,
+  brutoCena,
+  calcularAlvo,
+  estadoCena,
+  rampa,
+  sincronizarCena,
+  suavizarCena,
+  zerarCena,
+  type AlvoNucleo,
+} from './estadoCena.ts';
+import { iniciarMedidorFps } from '../lib/medidorFps.ts';
 import SecaoHero from './secoes/SecaoHero.tsx';
 import SecaoHistoria from './secoes/SecaoHistoria.tsx';
 import SecaoPortas from './secoes/SecaoPortas.tsx';
@@ -17,6 +28,12 @@ import './inicial.css';
 
 /** Unidades da cena 3D por altura da tela (fov 36° a 7 de distância ≈ 4,55 unidades). */
 const UNIDADES_POR_ALTURA = 4.55;
+
+/** Altura de rolagem da transição sol → gosma, em alturas de tela (o hero fica fixado durante ela). */
+const TELAS_DA_TRANSICAO = 2.8;
+
+/** Até onde a transição pode ter avançado (0–1) para o núcleo ainda seguir o ponteiro. */
+const LIMITE_INTERACAO = 0.06;
 
 export default function PaginaInicial() {
   const { navegar } = useRoteador();
@@ -36,8 +53,7 @@ export default function PaginaInicial() {
   useGSAP(
     () => {
       // Sempre parte do início da jornada (o estado é um objeto de módulo e sobrevive à troca de rota).
-      estadoCena.hero = estadoCena.historia = estadoCena.meio = estadoCena.fim = 0;
-      estadoCena.mx = estadoCena.my = 0;
+      zerarCena();
       if (reduzido) return;
 
       const limpar: Array<() => void> = [];
@@ -48,6 +64,21 @@ export default function PaginaInicial() {
       window.addEventListener('resize', atualizarLargura);
       limpar.push(() => window.removeEventListener('resize', atualizarLargura));
 
+      /* ---------- Relógio único: suaviza o scroll para a cena (e o ponteiro) uma vez por quadro ---------- */
+      const suavizar = (_tempo: number, deltaMs: number) => {
+        const dt = Math.min(deltaMs, 50) / 1000;
+        suavizarCena(dt);
+        const k = 1 - Math.exp(-2.5 * dt);
+        estadoCena.mxs += (estadoCena.mx - estadoCena.mxs) * k;
+        estadoCena.mys += (estadoCena.my - estadoCena.mys) * k;
+      };
+      gsap.ticker.add(suavizar);
+      limpar.push(() => gsap.ticker.remove(suavizar));
+      // Depois de cada recálculo (carregamento, resize) a cena assume o ponto atual sem "viajar" desde o zero.
+      ScrollTrigger.addEventListener('refresh', sincronizarCena);
+      limpar.push(() => ScrollTrigger.removeEventListener('refresh', sincronizarCena));
+      limpar.push(iniciarMedidorFps(() => estadoCena.hero));
+
       /* ---------- Abertura: título revelado linha a linha + palco que acende ---------- */
       const abertura = gsap.timeline({ defaults: { ease: EASE.acender } });
       abertura
@@ -57,39 +88,89 @@ export default function PaginaInicial() {
         .from('.h-fade', { y: 24, autoAlpha: 0, duration: DURACAO.cena, stagger: 0.1 }, 1.0);
 
       /* ---------- Jornada: cada fase alimenta a câmera e a luz do núcleo ---------- */
-      const fase = (chave: 'hero' | 'meio' | 'fim', gatilho: string, inicio: string, fimPos: string) =>
+      const fase = (chave: 'meio' | 'fim', gatilho: string, inicio: string, fimPos: string) =>
         ScrollTrigger.create({
           trigger: gatilho,
           start: inicio,
           end: fimPos,
           onUpdate: (self: ScrollTrigger) => {
-            estadoCena[chave] = self.progress;
+            brutoCena[chave] = self.progress;
             aplicarPalco();
           },
         });
 
       const definirOpacidade = gsap.quickSetter('.inicio-palco', 'opacity');
+      const definirSombra = gsap.quickSetter('.inicio-sombra', 'opacity');
+      let definirLuz: ((v: number) => void) | null = null;
+      // Só escreve no DOM quando o valor muda: o scroll chama isto várias vezes por quadro.
+      let ultimoPalco = -1;
+      let ultimaSombra = -1;
+      let ultimaLuz = -1;
       const aplicarPalco = () => {
         // Recua durante "portas" e "recursos" para dar lugar ao texto e volta no final.
-        definirOpacidade(1 - 0.62 * estadoCena.meio * (1 - estadoCena.fim));
+        const palco = 1 - 0.62 * brutoCena.meio * (1 - brutoCena.fim);
+        if (palco !== ultimoPalco) {
+          ultimoPalco = palco;
+          definirOpacidade(palco);
+        }
+        // Sombra de leitura da "história": camada fixa que entra no fim da transição e sai por opacidade,
+        // então não existe borda de seção para aparecer como uma linha na tela.
+        const sombra = rampa(brutoCena.hero, 0.7, 1) * (1 - Math.min(1, brutoCena.meio * 1.4));
+        if (sombra !== ultimaSombra) {
+          ultimaSombra = sombra;
+          definirSombra(sombra);
+        }
+        // O halo do cursor só existe enquanto o núcleo está livre, no topo da página.
+        const luz = 1 - Math.min(1, brutoCena.hero * 12);
+        const aplicarLuz = definirLuz;
+        if (aplicarLuz && luz !== ultimaLuz) {
+          ultimaLuz = luz;
+          aplicarLuz(luz);
+        }
       };
 
       // Ordem importa: os gatilhos são criados na ordem em que aparecem na página,
       // e os que vêm depois da seção fixada precisam nascer depois dela.
-      fase('hero', '.inicio-hero', 'top top', 'bottom top');
-
-      gsap.to('.hero-conteudo', {
-        yPercent: -14,
-        autoAlpha: 0,
-        ease: 'none',
-        scrollTrigger: { trigger: '.inicio-hero', start: 'top top', end: 'bottom 35%', scrub: true },
-      });
+      /* ---------- Transição sol → gosma: o hero fica fixado por ~2,8 telas de rolagem ----------
+         A cena (CenaNucleo) conduz o olhar em fases: planetas em espiral → clarão → o disco "incha" em esfera 3D
+         → a distorção sobe até a gosma. Tudo é função de brutoCena.hero, então rolar para cima desfaz a transição. */
+      // Elementos resolvidos uma vez (antes, um seletor de texto era consultado a cada tick de scroll) e escrita
+      // no DOM só quando o valor muda: depois do início da transição o texto já saiu e nada mais é escrito.
+      const conteudoHero = gsap.utils.toArray<HTMLElement>('.hero-conteudo');
+      const rodapeHero = gsap.utils.toArray<HTMLElement>('.hero-rodape');
+      let ultimoSai = -1;
+      let ultimoRodape = -1;
+      const aplicarHero = (self: ScrollTrigger) => {
+        brutoCena.hero = self.progress;
+        // O texto, os botões e o indicador "Role" saem logo no início da transição, presos ao mesmo progresso
+        // (antes eram ScrollTriggers separados que não disparavam com o hero fixado e ficavam na frente da cena).
+        const sai = rampa(self.progress, 0, 0.12);
+        if (sai !== ultimoSai) {
+          ultimoSai = sai;
+          gsap.set(conteudoHero, { opacity: 1 - sai, yPercent: -14 * sai, pointerEvents: sai > 0.9 ? 'none' : 'auto' });
+        }
+        const rodape = 1 - rampa(self.progress, 0, 0.03);
+        if (rodape !== ultimoRodape) {
+          ultimoRodape = rodape;
+          gsap.set(rodapeHero, { opacity: rodape });
+        }
+        aplicarPalco();
+      };
 
       ScrollTrigger.create({
         trigger: '.inicio-hero',
-        start: 'top -60',
-        end: 'max',
-        toggleClass: { targets: '.inicio-topo', className: 'inicio-topo--rolado' },
+        start: 'top top',
+        end: () => `+=${Math.round(window.innerHeight * TELAS_DA_TRANSICAO)}`,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        // Atualiza também ao ser ultrapassado, ao voltar e ao recalcular: um salto direto para a história
+        // (link, recarregar no meio da página) precisa deixar o hero no fim, não parado no meio.
+        onUpdate: aplicarHero,
+        onRefresh: aplicarHero,
+        onLeave: aplicarHero,
+        onLeaveBack: aplicarHero,
       });
 
       /* ---------- Seção fixada: três cenas coreografadas pelo scroll ---------- */
@@ -108,15 +189,15 @@ export default function PaginaInicial() {
           start: 'top top',
           end: '+=320%',
           pin: true,
-          scrub: 0.8,
+          scrub: SUAVIZACAO.dom,
           anticipatePin: 1,
           invalidateOnRefresh: true,
           onUpdate: (self: ScrollTrigger) => {
-            estadoCena.historia = self.progress;
+            brutoCena.historia = self.progress;
             marcarPasso(self.progress);
           },
           onLeaveBack: () => {
-            estadoCena.historia = 0;
+            brutoCena.historia = 0;
           },
         },
       });
@@ -166,19 +247,25 @@ export default function PaginaInicial() {
       gsap.to('.marq-a', {
         xPercent: -32,
         ease: 'none',
-        scrollTrigger: { trigger: '.ini-marquee', start: 'top bottom', end: 'bottom top', scrub: 0.6 },
+        scrollTrigger: { trigger: '.ini-marquee', start: 'top bottom', end: 'bottom top', scrub: SUAVIZACAO.dom },
       });
       gsap.fromTo(
         '.marq-b',
         { xPercent: -32 },
-        { xPercent: 0, ease: 'none', scrollTrigger: { trigger: '.ini-marquee', start: 'top bottom', end: 'bottom top', scrub: 0.6 } }
+        { xPercent: 0, ease: 'none', scrollTrigger: { trigger: '.ini-marquee', start: 'top bottom', end: 'bottom top', scrub: SUAVIZACAO.dom } }
       );
 
       /* ---------- Ponteiro: luz que segue o cursor e parallax do núcleo ---------- */
       if (temPonteiroFino()) {
         const luzX = gsap.quickTo('.inicio-luz', 'x', { duration: 0.9, ease: 'power3.out' });
         const luzY = gsap.quickTo('.inicio-luz', 'y', { duration: 0.9, ease: 'power3.out' });
+        definirLuz = gsap.quickSetter('.inicio-luz', 'opacity') as (v: number) => void;
         const mover = (e: PointerEvent) => {
+          // Depois que o título sai de cena há texto na frente do núcleo: ele para de reagir ao mouse.
+          if (brutoCena.hero > LIMITE_INTERACAO) {
+            estadoCena.mx = estadoCena.my = 0;
+            return;
+          }
           luzX(e.clientX);
           luzY(e.clientY);
           estadoCena.mx = (e.clientX / window.innerWidth) * 2 - 1;
@@ -190,14 +277,12 @@ export default function PaginaInicial() {
 
       /* ---------- Alternativa sem WebGL: o núcleo em CSS segue a mesma jornada ---------- */
       if (!em3d) {
-        const s = { x: 0, y: 0, escala: 0.9 };
+        // Sem WebGL o núcleo em CSS acompanha a mesma jornada, lendo o mesmo estado já suavizado.
+        const alvo: AlvoNucleo = { x: 0, y: 0, escala: 1 };
         const acompanhar = () => {
-          const alvo = calcularAlvo(estadoCena);
+          calcularAlvo(estadoCena, alvo);
           const u = window.innerHeight / UNIDADES_POR_ALTURA;
-          s.x += (alvo.x - s.x) * 0.08;
-          s.y += (alvo.y - s.y) * 0.08;
-          s.escala += (alvo.escala - s.escala) * 0.08;
-          gsap.set('.inicio-palco-css', { x: s.x * u, y: -s.y * u, scale: s.escala });
+          gsap.set('.inicio-palco-css', { x: alvo.x * u, y: -alvo.y * u, scale: alvo.escala });
         };
         gsap.ticker.add(acompanhar);
         limpar.push(() => gsap.ticker.remove(acompanhar));
@@ -220,11 +305,12 @@ export default function PaginaInicial() {
             </div>
           ) : (
             <div className="inicio-palco-css">
-              <NucleoCSS />
+              <SolCanvas />
             </div>
           )}
         </div>
         <div className="inicio-vinheta" />
+        <div className="inicio-sombra" />
       </div>
       <div className="inicio-luz" aria-hidden="true" />
 
@@ -239,7 +325,7 @@ export default function PaginaInicial() {
         </button>
         <nav className="inicio-topo-nav" aria-label="Principal">
           <button type="button" className="inicio-link" onClick={() => irPara('/aulas')}>
-            Biblioteca
+            Aulas
           </button>
           {sessao ? (
             <>

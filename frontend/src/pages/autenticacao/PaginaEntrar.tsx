@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Clock, Eye, EyeOff, Loader2, LogIn, ShieldAlert } from 'lucide-react';
+import { Clock, Eye, EyeOff, Loader2, Lock, LogIn, Mail, ShieldAlert } from 'lucide-react';
 import type { ApiError } from '../../api/tipos.ts';
 import { useAuth } from '../../auth/AuthContext.tsx';
 import { destinoPosLogin } from '../../auth/rotas.ts';
@@ -76,18 +76,23 @@ export default function PaginaEntrar() {
           <label className="av-campo-rotulo" htmlFor="login-email">
             E-mail
           </label>
-          <input
-            id="login-email"
-            className="av-entrada"
-            type="email"
-            autoComplete="username"
-            inputMode="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={erro ? true : undefined}
-            disabled={enviando}
-            required
-          />
+          <div className="av-entrada-grupo">
+            <Mail className="av-entrada-icone" aria-hidden="true" />
+            <input
+              id="login-email"
+              className="av-entrada av-entrada--icone"
+              type="email"
+              autoComplete="username"
+              inputMode="email"
+              placeholder="voce@escola.com.br"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={erro ? true : undefined}
+              aria-describedby={erro ? 'login-erro' : undefined}
+              disabled={enviando}
+              required
+            />
+          </div>
         </div>
 
         <div className="av-campo av-aut-entra">
@@ -95,14 +100,17 @@ export default function PaginaEntrar() {
             Senha
           </label>
           <div className="av-entrada-grupo">
+            <Lock className="av-entrada-icone" aria-hidden="true" />
             <input
               id="login-senha"
-              className="av-entrada"
+              className="av-entrada av-entrada--icone"
               type={mostrarSenha ? 'text' : 'password'}
               autoComplete="current-password"
+              placeholder="Sua senha"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               aria-invalid={erro ? true : undefined}
+              aria-describedby={erro ? 'login-erro' : undefined}
               disabled={enviando}
               required
             />
@@ -120,6 +128,7 @@ export default function PaginaEntrar() {
 
         {erro && (
           <div
+            id="login-erro"
             className={`av-aviso ${contaBloqueada ? 'av-aviso-atencao' : 'av-aviso-erro'}`}
             role="alert"
           >
@@ -144,7 +153,7 @@ export default function PaginaEntrar() {
         <p>
           Só quero estudar:{' '}
           <button type="button" className="av-link" onClick={() => navegar('/aulas')}>
-            abrir a biblioteca
+            ver as aulas
           </button>{' '}
           <span className="av-campo-ajuda">(não precisa de conta)</span>
         </p>

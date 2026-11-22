@@ -24,11 +24,11 @@ export default function SecaoPortas({ irPara }: Props) {
           <p className="ini-rotulo">Para o aluno</p>
           <h3 className="porta-titulo">Estude sem criar conta.</h3>
           <p className="ini-texto">
-            A biblioteca é pública e mostra somente aulas que já ficaram prontas: resumo, slides e fotos do quadro, no
+            A página de aulas é pública e mostra somente aulas que já ficaram prontas: resumo, slides e fotos do quadro, no
             seu ritmo.
           </p>
           <button type="button" className="porta-acao" onClick={() => irPara('/aulas')}>
-            <span>Abrir a biblioteca</span>
+            <span>Ver as aulas</span>
             <ArrowUpRight className="w-5 h-5" aria-hidden="true" />
           </button>
         </article>

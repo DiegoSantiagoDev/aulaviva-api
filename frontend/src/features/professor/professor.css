@@ -371,8 +371,8 @@
 .av-prof-mini { position: relative; }
 .av-prof-mini-excluir {
   position: absolute; top: 0.3rem; right: 0.3rem; z-index: 2; display: grid; place-items: center;
-  width: 1.9rem; height: 1.9rem; border-radius: 999px; color: #fff; background: rgba(7, 6, 13, 0.78);
-  border: 1px solid rgba(242, 238, 251, 0.25); backdrop-filter: blur(6px);
+  width: 1.9rem; height: 1.9rem; border-radius: 999px; color: #fff; background: rgba(5, 4, 4, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.25); backdrop-filter: blur(6px);
   transition: background-color 0.25s var(--av-ease), transform 0.25s var(--av-ease);
 }
 .av-prof-mini-excluir:hover:not(:disabled) { background: var(--av-erro); color: #1a0603; transform: scale(1.08); }

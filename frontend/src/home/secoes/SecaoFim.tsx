@@ -18,7 +18,7 @@ export default function SecaoFim({ irPara }: Props) {
         </h2>
         <div className="ini-acoes rev">
           <BotaoMagnetico className="ini-botao ini-botao-brasa" onClick={() => irPara('/aulas')}>
-            <span>Abrir a biblioteca</span>
+            <span>Ver as aulas</span>
             <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </BotaoMagnetico>
           <BotaoMagnetico className="ini-botao ini-botao-vidro" onClick={() => irPara('/entrar')}>

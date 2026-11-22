@@ -4,7 +4,7 @@ import { LessonListItem } from '../../api/tipos.ts';
 import CartaoAula from './CartaoAula.tsx';
 import FiltroDisciplinas from './FiltroDisciplinas.tsx';
 import EsqueletoAulas from './EsqueletoAulas.tsx';
-import EmblemaBoasVindas from '../../components/EmblemaBoasVindas.tsx';
+import SolCanvas from '../../components/ui/SolCanvas.tsx';
 import EmblemaLeitura from '../../components/EmblemaLeitura.tsx';
 import EmblemaPerdido from '../../components/EmblemaPerdido.tsx';
 import { tomDaDisciplina } from '../../lib/tomDisciplina.ts';
@@ -194,9 +194,9 @@ export default function BibliotecaAulas() {
     <div className="av-pagina av-bib anim-fade-up space-y-8">
       {/* Topo: emblema de boas-vindas, título e situação da lista */}
       <header className="av-topo">
-        <EmblemaBoasVindas inView={true} className="av-emblema" />
+        <SolCanvas className="av-emblema av-emblema-sol" />
         <div className="flex-1 min-w-0">
-          <h1 className="av-titulo">Biblioteca de aulas</h1>
+          <h1 className="av-titulo">Aulas</h1>
           <p className="av-lead">
             Aqui ficam as aulas com processamento concluído. Abra uma aula para estudar pelo resumo,
             pelos slides e pelas fotos do quadro.

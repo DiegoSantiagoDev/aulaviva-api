@@ -12,49 +12,49 @@
 
 :root {
   /* ---- Cores-base ---- */
-  --av-primaria: #f2eefb;            /* texto principal (luz) */
-  --av-primaria-suave: #cfc9e3;
-  --av-fundo: #07060d;               /* vazio */
-  --av-ouro: #ffa51f;                /* brasa */
-  --av-ouro-escuro: #ffbd5c;         /* brasa legível como texto sobre o vazio */
-  --av-terra: #ff5b3a;               /* coral */
-  --av-terra-escuro: #ff8a70;
-  --av-salvia: #4fd6a0;              /* aurora (sucesso) */
+  --av-primaria: #ffffff;            /* texto principal (luz) */
+  --av-primaria-suave: #ece8f4;
+  --av-fundo: #050404;               /* vazio */
+  --av-ouro: #ffb000;                /* brasa */
+  --av-ouro-escuro: #ffd21f;         /* brasa legível como texto sobre o vazio */
+  --av-terra: #ff4a1c;               /* coral */
+  --av-terra-escuro: #ff7a55;
+  --av-salvia: #25e08f;              /* aurora (sucesso) */
   --av-salvia-escuro: #7fe8be;
-  --av-violeta: #7b6cff;
-  --av-violeta-claro: #a79dff;
-  --av-foco: #ffd08a;
+  --av-violeta: #6d5bff;
+  --av-violeta-claro: #9a8cff;
+  --av-foco: #ffe066;
 
   /* ---- Superfícies e linhas ---- */
-  --av-superficie: #100e1f;
-  --av-superficie-2: #1a1731;
-  --av-linha: rgba(242, 238, 251, 0.1);
-  --av-linha-forte: rgba(255, 165, 31, 0.45);
-  --av-texto-suave: #a8a3bd;         /* contraste mínimo 7:1 sobre o vazio */
+  --av-superficie: #0f0b0b;
+  --av-superficie-2: #1a1413;
+  --av-linha: rgba(255, 255, 255, 0.1);
+  --av-linha-forte: rgba(255, 176, 0, 0.45);
+  --av-texto-suave: #cdc7d3;         /* 12,4:1 sobre o vazio (#050404); era #bab4c0 = 10,1:1 */
 
   /* ---- Destaque ---- */
-  --av-destaque: #a79dff;
-  --av-destaque-suave: rgba(123, 108, 255, 0.16);
+  --av-destaque: #9a8cff;
+  --av-destaque-suave: rgba(109, 91, 255, 0.16);
 
   /* ---- Estados ---- */
-  --av-sucesso: #5fe0b0;
-  --av-sucesso-suave: rgba(79, 214, 160, 0.14);
-  --av-aviso: #ffbd5c;
-  --av-aviso-suave: rgba(255, 165, 31, 0.16);
-  --av-erro: #ff8272;
-  --av-erro-suave: rgba(255, 91, 58, 0.14);
+  --av-sucesso: #3df0a0;
+  --av-sucesso-suave: rgba(37, 224, 143, 0.14);
+  --av-aviso: #ffcf33;
+  --av-aviso-suave: rgba(255, 176, 0, 0.16);
+  --av-erro: #ff7a62;
+  --av-erro-suave: rgba(255, 74, 28, 0.14);
 
   /* ---- Véus e palco (visualizador de fotos) ---- */
-  --av-veu: rgba(5, 4, 10, 0.9);
-  --av-veu-leve: rgba(5, 4, 10, 0.5);
-  --av-veu-claro: rgba(242, 238, 251, 0.12);
-  --av-palco: #040309;
+  --av-veu: rgba(4, 3, 3, 0.9);
+  --av-veu-leve: rgba(4, 3, 3, 0.5);
+  --av-veu-claro: rgba(255, 255, 255, 0.12);
+  --av-palco: #030202;
 
   /* ---- Luz decorativa ---- */
-  --av-ouro-veu: rgba(255, 165, 31, 0.14);
-  --av-ouro-halo: rgba(255, 165, 31, 0.08);
-  --av-ouro-claro: #ffd08a;
-  --av-vidro: rgba(7, 6, 13, 0.72);
+  --av-ouro-veu: rgba(255, 176, 0, 0.14);
+  --av-ouro-halo: rgba(255, 176, 0, 0.08);
+  --av-ouro-claro: #ffe066;
+  --av-vidro: rgba(5, 4, 4, 0.72);
 
   /* ---- Tipografia ---- */
   --av-fonte-display: 'Cormorant Garamond', Georgia, serif;   /* editorial: títulos das telas de uso */
@@ -68,7 +68,7 @@
   --av-sombra-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px -4px rgba(0, 0, 0, 0.5);
   --av-sombra: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 34px -18px rgba(0, 0, 0, 0.75);
   --av-sombra-alta: 0 4px 8px rgba(0, 0, 0, 0.4), 0 30px 50px -20px rgba(0, 0, 0, 0.85);
-  --av-brilho: 0 0 0 1px rgba(255, 165, 31, 0.35), 0 10px 40px -12px rgba(255, 140, 40, 0.55);
+  --av-brilho: 0 0 0 1px rgba(255, 176, 0, 0.35), 0 10px 40px -12px rgba(255, 140, 40, 0.55);
   --av-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -97,7 +97,7 @@
 }
 
 /* ---- Tons por disciplina: usados via data-tom="..." ---- */
-[data-tom='ouro']     { --tom: var(--av-ouro-escuro);   --tom-suave: rgba(255, 165, 31, 0.16); --tom-barra: var(--av-ouro); }
-[data-tom='terra']    { --tom: var(--av-terra-escuro);  --tom-suave: rgba(255, 91, 58, 0.15);  --tom-barra: var(--av-terra); }
-[data-tom='salvia']   { --tom: var(--av-salvia-escuro); --tom-suave: rgba(79, 214, 160, 0.14); --tom-barra: var(--av-salvia); }
+[data-tom='ouro']     { --tom: var(--av-ouro-escuro);   --tom-suave: rgba(255, 176, 0, 0.16); --tom-barra: var(--av-ouro); }
+[data-tom='terra']    { --tom: var(--av-terra-escuro);  --tom-suave: rgba(255, 74, 28, 0.15);  --tom-barra: var(--av-terra); }
+[data-tom='salvia']   { --tom: var(--av-salvia-escuro); --tom-suave: rgba(37, 224, 143, 0.14); --tom-barra: var(--av-salvia); }
 [data-tom='destaque'] { --tom: var(--av-destaque);      --tom-suave: var(--av-destaque-suave); --tom-barra: var(--av-violeta); }

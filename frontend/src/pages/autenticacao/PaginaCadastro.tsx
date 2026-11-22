@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { CheckCircle2, Clock, Loader2, ShieldAlert, UserPlus } from 'lucide-react';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { CheckCircle2, Clock, KeyRound, Loader2, Lock, Mail, ShieldAlert, ShieldCheck, User, UserPlus } from 'lucide-react';
 import { api } from '../../api/cliente.ts';
 import type { ApiError } from '../../api/tipos.ts';
 import { useRoteador } from '../../app/Roteador.tsx';
@@ -75,6 +75,20 @@ export default function PaginaCadastro() {
             <LinhaTitulo>enviado.</LinhaTitulo>
           </h1>
           <p className="av-aut-texto-corrido">{mensagemOk}</p>
+          <ol className="av-aut-etapas" aria-label="Situação do cadastro">
+            <li data-estado="feito">
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              <span>Cadastro enviado</span>
+            </li>
+            <li data-estado="agora">
+              <Clock className="w-4 h-4" aria-hidden="true" />
+              <span>Aguardando aprovação da administração</span>
+            </li>
+            <li data-estado="depois">
+              <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+              <span>Acesso liberado</span>
+            </li>
+          </ol>
           <div className="av-aviso av-aviso-atencao">
             <Clock className="w-4 h-4" aria-hidden="true" />
             <span>
@@ -87,7 +101,7 @@ export default function PaginaCadastro() {
               Ir para o login
             </button>
             <button type="button" className="av-btn av-btn-contorno" onClick={() => navegar('/aulas')}>
-              Ver a biblioteca
+              Ver as aulas
             </button>
           </div>
         </div>
@@ -101,24 +115,28 @@ export default function PaginaCadastro() {
     valor: string,
     set: (v: string) => void,
     erro: string | undefined,
-    extra: { type?: string; autoComplete: string; ajuda?: string; maxLength?: number }
+    extra: { type?: string; autoComplete: string; ajuda?: string; maxLength?: number; icone: ReactNode; placeholder: string }
   ) => (
     <div className="av-campo av-aut-entra">
       <label className="av-campo-rotulo" htmlFor={id}>
         {rotulo}
       </label>
-      <input
-        id={id}
-        className="av-entrada"
-        type={extra.type ?? 'text'}
-        autoComplete={extra.autoComplete}
-        value={valor}
-        onChange={(e) => set(e.target.value)}
-        aria-invalid={erro ? true : undefined}
-        aria-describedby={erro ? `${id}-erro` : extra.ajuda ? `${id}-ajuda` : undefined}
-        maxLength={extra.maxLength}
-        disabled={enviando}
-      />
+      <div className="av-entrada-grupo">
+        {extra.icone}
+        <input
+          id={id}
+          className="av-entrada av-entrada--icone"
+          type={extra.type ?? 'text'}
+          autoComplete={extra.autoComplete}
+          placeholder={extra.placeholder}
+          value={valor}
+          onChange={(e) => set(e.target.value)}
+          aria-invalid={erro ? true : undefined}
+          aria-describedby={erro ? `${id}-erro` : extra.ajuda ? `${id}-ajuda` : undefined}
+          maxLength={extra.maxLength}
+          disabled={enviando}
+        />
+      </div>
       {erro ? (
         <span id={`${id}-erro`} className="av-campo-erro" role="alert">
           {erro}
@@ -149,18 +167,22 @@ export default function PaginaCadastro() {
       </h1>
 
       <form className="av-aut-form" onSubmit={enviar} noValidate>
-        {campo('cad-nome', 'Nome', nome, setNome, erros.nome, { autoComplete: 'name', maxLength: LIMITES.nome })}
-        {campo('cad-email', 'E-mail', email, setEmail, erros.email, { type: 'email', autoComplete: 'email', maxLength: LIMITES.email })}
+        {campo('cad-nome', 'Nome', nome, setNome, erros.nome, { autoComplete: 'name', maxLength: LIMITES.nome, placeholder: 'Seu nome completo', icone: <User className="av-entrada-icone" aria-hidden="true" /> })}
+        {campo('cad-email', 'E-mail', email, setEmail, erros.email, { type: 'email', autoComplete: 'email', maxLength: LIMITES.email, placeholder: 'voce@escola.com.br', icone: <Mail className="av-entrada-icone" aria-hidden="true" /> })}
         {campo('cad-senha', 'Senha', senha, setSenha, erros.senha, {
           type: 'password',
           autoComplete: 'new-password',
           maxLength: LIMITES.senhaMax,
           ajuda: `De ${LIMITES.senhaMin} a ${LIMITES.senhaMax} caracteres.`,
+          placeholder: `Mínimo de ${LIMITES.senhaMin} caracteres`,
+          icone: <Lock className="av-entrada-icone" aria-hidden="true" />,
         })}
         {campo('cad-confirmar', 'Repita a senha', confirmar, setConfirmar, erros.confirmar, {
           type: 'password',
           autoComplete: 'new-password',
           maxLength: LIMITES.senhaMax,
+          placeholder: 'Digite a senha de novo',
+          icone: <KeyRound className="av-entrada-icone" aria-hidden="true" />,
         })}
 
         {erroApi && (

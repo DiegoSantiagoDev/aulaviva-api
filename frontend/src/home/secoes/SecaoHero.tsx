@@ -21,11 +21,11 @@ export default function SecaoHero({ irPara }: Props) {
         </h1>
         <p className="ini-lead h-fade">
           Grave a explicação. O Aula Viva transforma a voz do professor em resumo, slides e material de estudo —
-          pronto na biblioteca para quem quer aprender.
+          pronto para quem quer aprender.
         </p>
         <div className="ini-acoes h-fade">
           <BotaoMagnetico className="ini-botao ini-botao-brasa" onClick={() => irPara('/aulas')}>
-            <span>Abrir a biblioteca</span>
+            <span>Ver as aulas</span>
             <ArrowRight className="w-4 h-4" aria-hidden="true" />
           </BotaoMagnetico>
           <BotaoMagnetico className="ini-botao ini-botao-vidro" onClick={() => irPara('/cadastro')}>

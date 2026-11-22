@@ -3,7 +3,8 @@ import { ArrowLeft } from 'lucide-react';
 import { useRoteador } from '../../app/Roteador.tsx';
 import { gsap, useGSAP } from '../../animacoes/motor.ts';
 import { DURACAO, EASE, prefereMovimentoReduzido, temPonteiroFino } from '../../animacoes/movimento.ts';
-import NucleoCSS from '../../components/ui/NucleoCSS.tsx';
+import SolCanvas from '../../components/ui/SolCanvas.tsx';
+import UniversoEstelar from '../../components/ui/UniversoEstelar.tsx';
 import './autenticacao.css';
 
 interface PalcoAutenticacaoProps {
@@ -15,8 +16,8 @@ interface PalcoAutenticacaoProps {
 }
 
 /**
- * Moldura das telas de acesso: à esquerda a cena (núcleo + frase), à direita o formulário.
- * Intro coreografada com GSAP; o núcleo reage levemente ao mouse.
+ * Moldura das telas de acesso: à esquerda a cena (sol + frase), à direita o formulário.
+ * Intro coreografada com GSAP; o sol reage levemente ao mouse.
  */
 export default function PalcoAutenticacao({ etiqueta, chamada, children }: PalcoAutenticacaoProps) {
   const { navegar } = useRoteador();
@@ -46,13 +47,14 @@ export default function PalcoAutenticacao({ etiqueta, chamada, children }: Palco
 
   return (
     <div ref={raiz} className="av-aut">
+      <UniversoEstelar />
       <aside className="av-aut-cena" aria-hidden={false}>
         <button type="button" className="av-aut-voltar av-aut-entra" onClick={() => navegar('/')}>
           <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           <span>Aula Viva</span>
         </button>
         <div className="av-aut-nucleo">
-          <NucleoCSS />
+          <SolCanvas />
         </div>
         <div className="av-aut-texto">
           <p className="av-rotulo av-aut-entra">{etiqueta}</p>

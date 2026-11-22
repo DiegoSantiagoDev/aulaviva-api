@@ -27,14 +27,21 @@ export function temPonteiroFino(): boolean {
   return typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 }
 
-/** Heurística de aparelho modesto: reduz resolução, partículas e malha 3D. */
+/**
+ * Aparelho realmente modesto: pouca memória/CPU declaradas OU celular (tela estreita + toque).
+ * Notebooks comuns de 4 núcleos NÃO entram aqui: a qualidade só cai depois, de forma adaptativa,
+ * se o fps medido ficar abaixo de ~50 (PerformanceMonitor na cena).
+ */
 export function dispositivoModesto(): boolean {
   if (typeof navigator === 'undefined') return false;
   const nav = navigator as Navigator & { deviceMemory?: number };
-  const poucosNucleos = (nav.hardwareConcurrency ?? 8) <= 4;
-  const pouca = (nav.deviceMemory ?? 8) <= 4;
-  const telaPequena = typeof window !== 'undefined' && window.innerWidth < 768;
-  return poucosNucleos || pouca || telaPequena;
+  const poucosNucleos = (nav.hardwareConcurrency ?? 8) <= 2;
+  const pouca = (nav.deviceMemory ?? 8) <= 2;
+  const celular =
+    typeof window !== 'undefined' &&
+    window.innerWidth < 768 &&
+    window.matchMedia('(pointer: coarse)').matches;
+  return poucosNucleos || pouca || celular;
 }
 
 export function webglDisponivel(): boolean {

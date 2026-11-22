@@ -210,7 +210,7 @@ export default function AcompanhamentoProcessamento({
             </div>
           )}
           {aula.status === 'DONE' && (
-            <p className="av-prof-ajuda">Os alunos já veem esta aula na biblioteca.</p>
+            <p className="av-prof-ajuda">Os alunos já veem esta aula na página de aulas.</p>
           )}
         </div>
 

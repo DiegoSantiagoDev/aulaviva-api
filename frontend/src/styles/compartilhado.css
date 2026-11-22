@@ -18,7 +18,7 @@
   padding: 2rem 1.25rem;
   text-align: center;
   background:
-    radial-gradient(60% 50% at 80% 0%, rgba(123, 108, 255, 0.16), transparent 70%),
+    radial-gradient(60% 50% at 80% 0%, rgba(109, 91, 255, 0.16), transparent 70%),
     radial-gradient(50% 40% at 10% 100%, rgba(255, 140, 40, 0.1), transparent 70%),
     var(--av-fundo);
   color: var(--av-primaria);
@@ -80,7 +80,7 @@
 
 .av-btn-primario {
   color: #1a0d02;
-  background: linear-gradient(135deg, #ffbd5c 0%, #ff8a2b 55%, #ff5b3a 100%);
+  background: linear-gradient(135deg, #ffcf33 0%, #ff8a00 55%, #ff4a1c 100%);
   border: 1px solid transparent;
   font-weight: 700;
 }
@@ -118,7 +118,7 @@
   border: 1px solid transparent;
   font-weight: 700;
 }
-.av-btn-erro:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -12px rgba(255, 91, 58, 0.7); }
+.av-btn-erro:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -12px rgba(255, 74, 28, 0.7); }
 .av-btn-erro:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ---------- Estados: erro, vazio, sem resultado ---------- */
@@ -173,12 +173,23 @@
   gap: 1.25rem;
   padding: 1.5rem;
   border-radius: var(--av-raio-lg);
+  /* Vidro escuro sobre o céu estrelado, com um fio de luz que orbita a borda (mesma linguagem do login). */
   background:
-    radial-gradient(120% 140% at 0% 0%, rgba(255, 165, 31, 0.16) 0%, transparent 55%),
-    radial-gradient(90% 120% at 100% 100%, rgba(123, 108, 255, 0.14) 0%, transparent 60%),
-    var(--av-superficie);
-  box-shadow: inset 0 0 0 1px var(--av-linha-forte), var(--av-sombra);
+    radial-gradient(120% 140% at 0% 0%, rgba(255, 176, 0, 0.13) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(16, 12, 9, 0.84), rgba(9, 7, 5, 0.8));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), var(--av-sombra), 0 0 70px -34px rgba(255, 140, 0, 0.4);
 }
+@property --av-orbita { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.av-topo::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--av-orbita), transparent 0deg, rgba(255, 190, 70, 0.9) 26deg, rgba(255, 90, 30, 0.5) 52deg, transparent 88deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: avOrbitaTopo 9s linear infinite;
+}
+@keyframes avOrbitaTopo { to { --av-orbita: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .av-topo::before { animation: none; } }
+@media print { .av-topo::before { display: none; } }
 @media (min-width: 640px) {
   .av-topo {
     flex-direction: row;
@@ -194,6 +205,8 @@
   height: 5.5rem;
   color: var(--av-primaria);
 }
+/* O sol com os planetas pixelados no lugar do emblema: canvas quadrado, um pouco maior para a coroa respirar. */
+.av-emblema.av-emblema-sol { flex: none; width: 8.5rem; height: 8.5rem; aspect-ratio: 1; margin: -1.4rem; }
 @media (min-width: 640px) {
   .av-emblema { width: 6.5rem; height: 6.5rem; }
 }
@@ -283,7 +296,8 @@
 
 /* ---------- Campos de formulário (login, cadastro, admin) ---------- */
 .av-campo { display: grid; gap: 0.4rem; }
-.av-campo-rotulo { font-family: var(--av-fonte-mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--av-texto-suave); }
+.av-campo-rotulo { font-family: var(--av-fonte-mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--av-texto-suave); transition: color 0.25s var(--av-ease); }
+.av-campo:focus-within .av-campo-rotulo { color: var(--av-ouro-claro); }
 .av-entrada {
   width: 100%;
   min-height: 3rem;
@@ -291,16 +305,38 @@
   color: var(--av-primaria);
   font: inherit;
   font-size: 0.95rem;
-  background: rgba(242, 238, 251, 0.04);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--av-linha);
   border-radius: var(--av-raio-sm);
   transition: border-color 0.3s var(--av-ease), box-shadow 0.3s var(--av-ease), background-color 0.3s var(--av-ease);
 }
-.av-entrada::placeholder { color: #6f6a86; }
-.av-entrada:hover { border-color: rgba(242, 238, 251, 0.22); }
-.av-entrada:focus { outline: none; border-color: var(--av-ouro); box-shadow: 0 0 0 3px rgba(255, 165, 31, 0.22); background: rgba(242, 238, 251, 0.07); }
+.av-entrada::placeholder { color: #9a95b0; opacity: 1; } /* ≥ 4,5:1 sobre o campo escuro */
+.av-entrada:hover { border-color: rgba(255, 255, 255, 0.22); }
+.av-entrada:focus,
+.av-entrada:focus-visible { outline: none; border-color: var(--av-ouro-claro); box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.38), 0 0 26px -4px rgba(255, 196, 0, 0.55); background: rgba(255, 255, 255, 0.08); }
+.av-entrada[aria-invalid='true']:focus { box-shadow: 0 0 0 3px rgba(255, 122, 98, 0.35), 0 0 24px -6px rgba(255, 122, 98, 0.5); border-color: var(--av-erro); }
+/* Autofill do navegador: sem o fundo claro/azulado padrão */
+.av-entrada:-webkit-autofill,
+.av-entrada:-webkit-autofill:hover,
+.av-entrada:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--av-primaria);
+  caret-color: var(--av-primaria);
+  -webkit-box-shadow: 0 0 0 1000px #1b1409 inset;
+  box-shadow: 0 0 0 1000px #1b1409 inset;
+  border-color: rgba(255, 196, 0, 0.45);
+  transition: background-color 9999s ease-out 0s;
+}
+.av-entrada:-moz-autofill { background-color: #1b1409; color: var(--av-primaria); }
+/* Ícone à esquerda do campo (acende em amarelo com o foco) */
+.av-entrada-grupo { position: relative; }
+.av-entrada-icone {
+  position: absolute; left: 0.9rem; top: 50%; width: 1.05rem; height: 1.05rem; transform: translateY(-50%);
+  color: var(--av-texto-suave); pointer-events: none; transition: color 0.25s var(--av-ease);
+}
+.av-entrada-grupo:focus-within .av-entrada-icone { color: var(--av-ouro-claro); }
+.av-entrada--icone { padding-left: 2.75rem; }
 .av-entrada[aria-invalid='true'] { border-color: var(--av-erro); }
-.av-campo-erro { font-size: 0.8rem; color: var(--av-erro); }
+.av-campo-erro { font-size: 0.82rem; font-weight: 600; color: var(--av-erro); }
 .av-campo-ajuda { font-size: 0.78rem; color: var(--av-texto-suave); }
 
 /* ---------- Linha de ações ---------- */
@@ -317,7 +353,7 @@
   pointer-events: none;
   opacity: 0;
   transform: scaleX(0);
-  background: linear-gradient(90deg, #7b6cff, #ffa51f 55%, #ff5b3a);
+  background: linear-gradient(90deg, #6d5bff, #ffb000 55%, #ff4a1c);
   box-shadow: 0 0 18px rgba(255, 140, 40, 0.8);
 }
 
@@ -337,7 +373,7 @@
   border-radius: 999px;
   border: 2px solid transparent;
   border-top-color: var(--av-ouro);
-  border-right-color: rgba(123, 108, 255, 0.7);
+  border-right-color: rgba(109, 91, 255, 0.7);
   animation: rotateSlow 1.1s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -360,49 +396,7 @@
 .av-dialogo-texto { font-size: 0.92rem; line-height: 1.6; color: var(--av-texto-suave); }
 .av-dialogo-acoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; margin-top: 0.4rem; }
 
-/* ---------- Núcleo em CSS (alternativa leve ao objeto 3D) ---------- */
-.av-nucleo { position: relative; width: 100%; aspect-ratio: 1; display: grid; place-items: center; }
-.av-nucleo-halo {
-  position: absolute;
-  inset: -18%;
-  border-radius: 999px;
-  background: radial-gradient(closest-side, rgba(255, 140, 40, 0.38), rgba(123, 108, 255, 0.18) 55%, transparent 75%);
-  filter: blur(8px);
-  animation: breathe 6s ease-in-out infinite;
-}
-.av-nucleo-esfera {
-  position: relative;
-  width: 58%;
-  aspect-ratio: 1;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 33% 28%, #fff1d6 0%, #ffc470 14%, #ff8a2b 36%, #ff5b3a 55%, #6a45e6 82%, #1b1245 100%);
-  box-shadow: 0 0 70px rgba(255, 130, 40, 0.55), inset -22px -26px 50px rgba(20, 8, 60, 0.7);
-  animation: floatSoft 9s ease-in-out infinite;
-}
-.av-nucleo-anel {
-  position: absolute;
-  width: 96%;
-  height: 34%;
-  border-radius: 999px;
-  border: 1px solid rgba(242, 238, 251, 0.55);
-  transform: rotate(-24deg);
-}
-.av-nucleo-anel-b { width: 82%; height: 50%; border-color: rgba(255, 165, 31, 0.5); transform: rotate(28deg); }
-.av-nucleo-satelite {
-  position: absolute;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 999px;
-  background: #fff1d6;
-  box-shadow: 0 0 16px 3px rgba(255, 190, 90, 0.9);
-  top: 18%;
-  right: 16%;
-  animation: floatY 5s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .av-nucleo-halo, .av-nucleo-esfera, .av-nucleo-satelite { animation: none !important; }
-}
+.av-sol-canvas { display: block; width: 100%; aspect-ratio: 1; }
 
 /* ---------- Link de pular para o conteúdo ---------- */
 .av-pular {

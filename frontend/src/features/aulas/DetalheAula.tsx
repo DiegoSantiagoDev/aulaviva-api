@@ -178,7 +178,7 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
             )}
             <button onClick={() => navegar('/aulas')} className="av-btn av-btn-contorno av-btn-lg">
               <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-              <span>Voltar à biblioteca</span>
+              <span>Voltar às aulas</span>
             </button>
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
           <div className="av-aula-acoes">
             <button onClick={() => navegar('/aulas')} className="av-btn av-btn-contorno av-btn-lg">
               <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-              <span>Voltar para a biblioteca</span>
+              <span>Voltar para as aulas</span>
             </button>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
           <div className="av-aula-acoes">
             <button onClick={() => navegar('/aulas')} className="av-btn av-btn-primario av-btn-lg">
               <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-              <span>Voltar à biblioteca</span>
+              <span>Voltar às aulas</span>
             </button>
           </div>
         </div>
@@ -247,7 +247,7 @@ export default function DetalheAula({ id }: DetalheAulaProps) {
       <div className="av-aula-topo no-print">
         <button onClick={() => navegar('/aulas')} className="av-aula-voltar">
           <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-          <span>Voltar à biblioteca</span>
+          <span>Voltar às aulas</span>
         </button>
       </div>
 

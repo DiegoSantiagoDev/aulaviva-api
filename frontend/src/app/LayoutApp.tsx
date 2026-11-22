@@ -2,20 +2,21 @@ import type { ReactNode } from 'react';
 import { BookOpen, GraduationCap, LogIn, LogOut, ShieldCheck } from 'lucide-react';
 import { useRoteador } from './Roteador.tsx';
 import { useAuth } from '../auth/AuthContext.tsx';
+import UniversoEstelar from '../components/ui/UniversoEstelar.tsx';
 import './layout.css';
 
 const ROTULO_PAPEL = { ADMIN: 'Administrador', PROFESSOR: 'Professor', ALUNO: 'Aluno' } as const;
 
 /**
  * Moldura das áreas de uso. O menu mostra só o que o papel da sessão pode abrir;
- * visitante anônimo (aluno) vê a biblioteca e o botão de entrar.
+ * visitante anônimo (aluno) vê as aulas e o botão de entrar.
  */
 export default function LayoutApp({ children }: { children: ReactNode }) {
   const { rota, navegar } = useRoteador();
   const { sessao, sair } = useAuth();
 
   const itens = [
-    { rota: '/aulas', rotulo: 'Biblioteca', Icone: BookOpen, visivel: true },
+    { rota: '/aulas', rotulo: 'Aulas', Icone: BookOpen, visivel: true },
     { rota: '/professor', rotulo: 'Painel', Icone: GraduationCap, visivel: sessao?.papel === 'PROFESSOR' || sessao?.papel === 'ADMIN' },
     { rota: '/admin', rotulo: 'Administração', Icone: ShieldCheck, visivel: sessao?.papel === 'ADMIN' },
   ].filter((i) => i.visivel);
@@ -26,7 +27,8 @@ export default function LayoutApp({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="av-app paper-grain">
+    <div className="av-app">
+      <UniversoEstelar variante="app" />
       <a href="#conteudo" className="av-pular" onClick={(e) => { e.preventDefault(); document.getElementById('conteudo')?.focus(); }}>
         Pular para o conteúdo
       </a>

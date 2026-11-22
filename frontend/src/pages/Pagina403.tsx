@@ -29,7 +29,7 @@ export default function Pagina403() {
             </button>
           )}
           <button type="button" className="av-btn av-btn-contorno" onClick={() => navegar('/aulas')}>
-            Ver a biblioteca
+            Ver as aulas
           </button>
         </div>
       </section>
